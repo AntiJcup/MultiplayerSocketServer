@@ -91,7 +91,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Jacob\source\repos\MultiplayerSocketServer\protobuf_x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,6 +153,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Authenticate.pb.cc" />
     <ClCompile Include="MultiplayerSocketServer.cpp" />
     <ClCompile Include="SocketIOException.cpp" />
     <ClCompile Include="SocketIOListener.cpp" />
@@ -162,9 +163,11 @@
     <ClCompile Include="SocketIOSessionManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Authenticate.proto" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Authenticate.pb.h" />
     <ClInclude Include="SocketIOException.h" />
     <ClInclude Include="SocketIOListener.h" />
     <ClInclude Include="SocketIOManager.h" />

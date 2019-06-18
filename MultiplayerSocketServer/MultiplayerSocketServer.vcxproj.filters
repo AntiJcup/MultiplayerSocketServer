@@ -19,6 +19,21 @@
     <Filter Include="Source Files\Socket">
       <UniqueIdentifier>{3bb7276c-bc4b-490d-8b4e-26b7c3bfb661}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Protobuf">
+      <UniqueIdentifier>{df69b310-11a8-400d-a9d4-71139675e1a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Protobuf\Messages">
+      <UniqueIdentifier>{01db05f5-f709-4a46-a8d0-2bed75e4f5fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Protobuf">
+      <UniqueIdentifier>{e0a4dde6-fa61-44ed-85d0-bcd9a27c3629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Protobuf">
+      <UniqueIdentifier>{dfd3bb3c-e9a8-4002-b048-74929425b80a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Protobuf\Messages">
+      <UniqueIdentifier>{22f63f3c-756b-4b79-b000-bc85b4eff8ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MultiplayerSocketServer.cpp">
@@ -42,9 +57,15 @@
     <ClCompile Include="SocketIOSessionManager.cpp">
       <Filter>Source Files\Socket</Filter>
     </ClCompile>
+    <ClCompile Include="Authenticate.pb.cc">
+      <Filter>Source Files\Protobuf\Messages</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Authenticate.proto">
+      <Filter>Protobuf</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SocketIOManager.h">
@@ -64,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="SocketIOSessionManager.h">
       <Filter>Header Files\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="Authenticate.pb.h">
+      <Filter>Header Files\Protobuf\Messages</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
