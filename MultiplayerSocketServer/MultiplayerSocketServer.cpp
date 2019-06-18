@@ -7,10 +7,15 @@
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	std::cout << "Hello World!\n";
 
-	SocketIOManager manager;
-	if (!manager.Initialize())
+	auto address = boost::beast::net::ip::make_address("127.0.0.1");
+	USHORT port = 8080;
+
+	SocketIOManager manager(24);
+	if (!manager.Initialize(std::make_shared<SocketIOListener>(manager.GetIOContext(), 
+		boost::asio::ip::tcp::endpoint{ address, port },
+		std::make_shared<SocketIOSessionManager>())))
 	{
 		return -1;
 	}
