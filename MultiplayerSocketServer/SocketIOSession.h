@@ -30,12 +30,10 @@ protected:
 	virtual void OnWrite(boost::beast::error_code ec,
 		std::size_t bytes_transferred);
 
-	virtual void OnData();
-
 private:
 	boost::beast::websocket::stream<boost::beast::tcp_stream> web_socket_stream_;
 	boost::beast::flat_buffer buffer_;
-	boost::uuids::uuid id_{ boost::uuids::random_generator()() }
+	boost::uuids::uuid id_{ boost::uuids::random_generator()() };
 	std::shared_ptr<SocketIOSessionManager> session_manager_;
 };
 

@@ -19,5 +19,5 @@ void SocketIOSessionManager::Broadcast()
 void SocketIOSessionManager::Send(const boost::uuids::uuid &session_id)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
-	sessions_[session_id]->
+	/*sessions_[session_id]->*/
 }
