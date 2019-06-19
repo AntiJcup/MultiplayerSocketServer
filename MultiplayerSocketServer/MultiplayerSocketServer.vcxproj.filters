@@ -34,6 +34,12 @@
     <Filter Include="Source Files\Protobuf\Messages">
       <UniqueIdentifier>{22f63f3c-756b-4b79-b000-bc85b4eff8ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Multiplayer">
+      <UniqueIdentifier>{e1c7da32-b71a-491e-a761-0a1f6cffeb24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Multiplayer">
+      <UniqueIdentifier>{8762bd69-745f-4ee7-937d-1bdd01120566}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MultiplayerSocketServer.cpp">
@@ -59,6 +65,15 @@
     </ClCompile>
     <ClCompile Include="Authenticate.pb.cc">
       <Filter>Source Files\Protobuf\Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiplayerRoom.cpp">
+      <Filter>Source Files\Multiplayer</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiplayerSession.cpp">
+      <Filter>Source Files\Multiplayer</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiplayerException.cpp">
+      <Filter>Source Files\Multiplayer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +103,15 @@
     </ClInclude>
     <ClInclude Include="Authenticate.pb.h">
       <Filter>Header Files\Protobuf\Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiplayerRoom.h">
+      <Filter>Header Files\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiplayerSession.h">
+      <Filter>Header Files\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiplayerException.h">
+      <Filter>Header Files\Multiplayer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

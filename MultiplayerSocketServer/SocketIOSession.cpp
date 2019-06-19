@@ -30,6 +30,11 @@ void SocketIOSession::Run()
 			shared_from_this()));
 }
 
+boost::signals2::connection SocketIOSession::ConnectOnDisconnect(const signal_t::slot_type& subscriber)
+{
+	return disconnect_sig_.connect(subscriber);
+}
+
 void SocketIOSession::OnAccept(boost::beast::error_code ec)
 {
 	if (ec)
@@ -41,6 +46,11 @@ void SocketIOSession::OnAccept(boost::beast::error_code ec)
 
 void SocketIOSession::DoRead()
 {
+	web_socket_stream_.async_read(
+		buffer_,
+		boost::beast::bind_front_handler(
+			&SocketIOSession::OnRead,
+			shared_from_this()));
 }
 
 void SocketIOSession::OnRead(
@@ -51,18 +61,13 @@ void SocketIOSession::OnRead(
 
 	// This indicates that the session was closed
 	if (ec == boost::beast::websocket::error::closed)
-		return;
+		OnDisconnect();
+	return;
 
 	if (ec)
 		throw SocketIOException("failed read", ec);
 
-	// Echo the message
-	//web_socket_stream_.text(web_socket_stream_.got_text());
-	/*web_socket_stream_.async_write(
-		buffer_.data(),
-		boost::beast::bind_front_handler(
-			&SocketIOSession::OnWrite,
-			shared_from_this()));*/
+	DoRead();
 }
 
 void SocketIOSession::OnWrite(boost::beast::error_code ec, std::size_t bytes_transferred)
@@ -77,4 +82,9 @@ void SocketIOSession::OnWrite(boost::beast::error_code ec, std::size_t bytes_tra
 
 	// Do another read
 	DoRead();
+}
+
+void SocketIOSession::OnDisconnect()
+{
+	disconnect_sig_(this); //Fire disconnect event
 }
