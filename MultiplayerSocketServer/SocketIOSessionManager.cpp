@@ -14,6 +14,11 @@ void SocketIOSessionManager::CreateNewSession(boost::asio::ip::tcp::socket&& soc
 void SocketIOSessionManager::Broadcast()
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
+
+	for (auto& session : sessions_)
+	{
+		session.second->
+	}
 }
 
 void SocketIOSessionManager::Send(const boost::uuids::uuid& session_id)

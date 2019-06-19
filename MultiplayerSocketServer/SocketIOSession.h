@@ -6,12 +6,14 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/signals2/signal.hpp>
 
+#include <google/protobuf/message.h>
+
 class SocketIOSessionManager;
 
 class SocketIOSession : public std::enable_shared_from_this<SocketIOSession>
 {
 public:
-	typedef boost::signals2::signal<void(SocketIOSession *)> signal_t;
+	typedef boost::signals2::signal<void(SocketIOSession*)> signal_t;
 
 	SocketIOSession(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<SocketIOSessionManager> session_manager);
 
@@ -22,7 +24,9 @@ public:
 		return id_;
 	}
 
-	boost::signals2::connection ConnectOnDisconnect(const signal_t::slot_type& subscriber);
+	boost::signals2::connection ListenToDisconnect(const signal_t::slot_type& subscriber);
+
+	void Send(const google::protobuf::Message &message);
 
 protected:
 	void OnAccept(boost::beast::error_code ec);
@@ -32,10 +36,10 @@ protected:
 	virtual void OnRead(boost::beast::error_code ec,
 		std::size_t bytes_transferred);
 
-	virtual void OnWrite(boost::beast::error_code ec,
+	void OnWrite(boost::beast::error_code ec,
 		std::size_t bytes_transferred);
 
-	virtual void OnDisconnect();
+	void OnDisconnect();
 
 private:
 	boost::beast::websocket::stream<boost::beast::tcp_stream> web_socket_stream_;

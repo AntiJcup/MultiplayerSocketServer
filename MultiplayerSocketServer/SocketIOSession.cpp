@@ -30,9 +30,14 @@ void SocketIOSession::Run()
 			shared_from_this()));
 }
 
-boost::signals2::connection SocketIOSession::ConnectOnDisconnect(const signal_t::slot_type& subscriber)
+boost::signals2::connection SocketIOSession::ListenToDisconnect(const signal_t::slot_type& subscriber)
 {
 	return disconnect_sig_.connect(subscriber);
+}
+
+void SocketIOSession::Write(const char* buffer, std::size_t buffer_size)
+{
+	web_socket_stream_.write(boost::asio::buffer(buffer, buffer_size));
 }
 
 void SocketIOSession::OnAccept(boost::beast::error_code ec)
@@ -57,8 +62,6 @@ void SocketIOSession::OnRead(
 	boost::beast::error_code ec,
 	std::size_t bytes_transferred)
 {
-	boost::ignore_unused(bytes_transferred);
-
 	// This indicates that the session was closed
 	if (ec == boost::beast::websocket::error::closed)
 		OnDisconnect();
@@ -66,6 +69,8 @@ void SocketIOSession::OnRead(
 
 	if (ec)
 		throw SocketIOException("failed read", ec);
+
+
 
 	DoRead();
 }

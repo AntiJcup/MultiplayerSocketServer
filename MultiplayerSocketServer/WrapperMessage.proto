@@ -20,7 +20,7 @@ message Move {
 }
 
 message WrapperMessage {
-  required int8 type = 1;
+  required int32 type = 1;
   oneof msg {
 	Authenticate authenticate = 2;
 	Move move = 3;

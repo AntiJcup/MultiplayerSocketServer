@@ -166,7 +166,7 @@
     <ClCompile Include="SocketIOSessionManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Authenticate.proto" />
+    <None Include="WrapperMessage.proto" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

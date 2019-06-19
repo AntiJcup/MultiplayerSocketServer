@@ -66,6 +66,9 @@ public:
 	void AddPlayer(std::shared_ptr<MultiplayerSession> player);
 	void RemovePlayer(const boost::uuids::uuid& player_id);
 
+	void Broadcast();
+	void Send(const boost::uuids::uuid& session_id);
+
 private:
 	std::size_t max_room_size_;
 	RoomState room_state_{ RoomState::Lobby };

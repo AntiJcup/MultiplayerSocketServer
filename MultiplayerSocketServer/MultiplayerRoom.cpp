@@ -15,11 +15,12 @@ void MultiplayerRoom::AddPlayer(std::shared_ptr<MultiplayerSession> player)
 	boost::lock_guard<MultiplayerRoom> guard(*this);
 	if (players_.size() >= get_max_room_size())
 	{
-		throw MultiplayerException("too many players in this room");
+		throw MultiplayerRoomException("too many players in this room", MultiplayerRoomExceptionType::RoomFull);
 	}
+
 	MultiplayerRoomSession session = {};
 	session.player = player;
-	session.disconnect_connection = player->ConnectOnDisconnect(
+	session.disconnect_connection = player->ListenToDisconnect(
 		[this](auto session) {
 			RemovePlayer(session->get_id());
 		});

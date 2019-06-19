@@ -78,7 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Authenticate.proto">
+    <None Include="WrapperMessage.proto">
       <Filter>Protobuf</Filter>
     </None>
   </ItemGroup>
