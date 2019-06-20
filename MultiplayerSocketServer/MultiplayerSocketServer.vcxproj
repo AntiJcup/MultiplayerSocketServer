@@ -153,7 +153,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Authenticate.pb.cc" />
     <ClCompile Include="MultiplayerException.cpp" />
     <ClCompile Include="MultiplayerSession.cpp" />
     <ClCompile Include="MultiplayerSocketServer.cpp" />
@@ -161,25 +160,28 @@
     <ClCompile Include="SocketIOException.cpp" />
     <ClCompile Include="SocketIOListener.cpp" />
     <ClCompile Include="SocketIOManager.cpp" />
+    <ClCompile Include="SocketIOMessageParser.cpp" />
     <ClCompile Include="SocketIOSession.cpp" />
     <ClCompile Include="SocketIOThread.cpp" />
     <ClCompile Include="SocketIOSessionManager.cpp" />
+    <ClCompile Include="WrapperMessage.pb.cc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="WrapperMessage.proto" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Authenticate.pb.h" />
     <ClInclude Include="MultiplayerException.h" />
     <ClInclude Include="MultiplayerRoom.h" />
     <ClInclude Include="MultiplayerSession.h" />
     <ClInclude Include="SocketIOException.h" />
     <ClInclude Include="SocketIOListener.h" />
     <ClInclude Include="SocketIOManager.h" />
+    <ClInclude Include="SocketIOMessageParser.h" />
     <ClInclude Include="SocketIOSession.h" />
     <ClInclude Include="SocketIOThread.h" />
     <ClInclude Include="SocketIOSessionManager.h" />
+    <ClInclude Include="WrapperMessage.pb.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

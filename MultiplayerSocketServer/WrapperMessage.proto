@@ -11,16 +11,16 @@ option go_package = "google.golang.org/genproto/protobuf/field_mask;field_mask";
 option cc_enable_arenas = true;
 
 message Authenticate {
-	required string token = 1;
+	string token = 1;
 }
 
 message Move {
-	required float x = 1;
-	required float y = 2;
+	float x = 1;
+	float y = 2;
 }
 
 message WrapperMessage {
-  required int32 type = 1;
+  int32 type = 1;
   oneof msg {
 	Authenticate authenticate = 2;
 	Move move = 3;

@@ -33,3 +33,11 @@ void MultiplayerRoom::RemovePlayer(const boost::uuids::uuid& player_id)
 	boost::lock_guard<MultiplayerRoom> guard(*this);
 	players_.erase(player_id);
 }
+
+void MultiplayerRoom::Broadcast(std::shared_ptr<google::protobuf::MessageLite> message)
+{
+}
+
+void MultiplayerRoom::Send(const boost::uuids::uuid& session_id, std::shared_ptr<google::protobuf::MessageLite> message)
+{
+}

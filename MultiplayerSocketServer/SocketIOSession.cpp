@@ -2,6 +2,9 @@
 #include "SocketIOException.h"
 #include "SocketIOSessionManager.h"
 
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+
 SocketIOSession::SocketIOSession(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<SocketIOSessionManager> session_manager)
 	: web_socket_stream_(std::move(socket)), session_manager_(session_manager)
 {
@@ -30,10 +33,38 @@ void SocketIOSession::Run()
 			shared_from_this()));
 }
 
-boost::signals2::connection SocketIOSession::ListenToDisconnect(const signal_t::slot_type& subscriber)
+boost::signals2::connection SocketIOSession::ListenToDisconnect(const disconnect_signal_t::slot_type& subscriber)
 {
 	return disconnect_sig_.connect(subscriber);
 }
+
+boost::signals2::connection SocketIOSession::ListenToMessages(const message_signal_t::slot_type& subscriber)
+{
+	return message_sig_.connect(subscriber);
+}
+
+void SocketIOSession::Send(const google::protobuf::MessageLite& message)
+{
+	boost::asio::streambuf stream_buffer;
+	std::ostream output_stream(&stream_buffer);
+	{
+		google::protobuf::io::OstreamOutputStream raw_output_stream(&output_stream);
+		google::protobuf::io::CodedOutputStream coded_output_stream(&raw_output_stream);
+		/*coded_output_stream.WriteVarint32(message.ByteSize());*/
+
+		message.SerializeToCodedStream(&coded_output_stream);
+		// IMPORTANT: In order to flush a CodedOutputStream it has to be deleted,
+		// otherwise a 0 bytes package is send over the wire.
+	}
+
+	Write(stream_buffer);
+}
+
+void SocketIOSession::Write(const boost::asio::streambuf& stream_buffer)
+{
+	web_socket_stream_.write(stream_buffer.data());
+}
+
 
 void SocketIOSession::Write(const char* buffer, std::size_t buffer_size)
 {
@@ -70,7 +101,10 @@ void SocketIOSession::OnRead(
 	if (ec)
 		throw SocketIOException("failed read", ec);
 
-
+	if (auto message_ptr = parser_.TryParseMessage(bytes_transferred, buffer_))
+	{
+		OnMessage(message_ptr);
+	}
 
 	DoRead();
 }
@@ -92,4 +126,9 @@ void SocketIOSession::OnWrite(boost::beast::error_code ec, std::size_t bytes_tra
 void SocketIOSession::OnDisconnect()
 {
 	disconnect_sig_(this); //Fire disconnect event
+}
+
+void SocketIOSession::OnMessage(std::shared_ptr<google::protobuf::MessageLite> message)
+{
+	message_sig_(this, message);
 }

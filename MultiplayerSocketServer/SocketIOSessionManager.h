@@ -10,17 +10,9 @@
 #include <memory>
 #include <unordered_map>
 
+#include "WrapperMessage.pb.h"
 
 class SocketIOSession;
-
-//template<>
-//struct std::hash<boost::uuids::uuid>
-//{
-//	size_t operator () (const boost::uuids::uuid& uid)
-//	{
-//		return boost::hash<boost::uuids::uuid>()(uid);
-//	}
-//};
 
 class SocketIOSessionManager : public std::enable_shared_from_this<SocketIOSessionManager>,
 	public boost::basic_lockable_adapter<boost::mutex>
@@ -28,8 +20,8 @@ class SocketIOSessionManager : public std::enable_shared_from_this<SocketIOSessi
 public:
 	void CreateNewSession(boost::asio::ip::tcp::socket&& socket);
 
-	void Broadcast();
-	void Send(const boost::uuids::uuid& session_id);
+	void Broadcast(std::shared_ptr<google::protobuf::MessageLite> message);
+	void Send(const boost::uuids::uuid& session_id, std::shared_ptr<google::protobuf::MessageLite> message);
 
 private:
 	std::unordered_map<boost::uuids::uuid, std::shared_ptr<SocketIOSession>, boost::hash<boost::uuids::uuid>> sessions_;

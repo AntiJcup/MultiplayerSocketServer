@@ -63,9 +63,6 @@
     <ClCompile Include="SocketIOSessionManager.cpp">
       <Filter>Source Files\Socket</Filter>
     </ClCompile>
-    <ClCompile Include="Authenticate.pb.cc">
-      <Filter>Source Files\Protobuf\Messages</Filter>
-    </ClCompile>
     <ClCompile Include="MultiplayerRoom.cpp">
       <Filter>Source Files\Multiplayer</Filter>
     </ClCompile>
@@ -74,6 +71,12 @@
     </ClCompile>
     <ClCompile Include="MultiplayerException.cpp">
       <Filter>Source Files\Multiplayer</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketIOMessageParser.cpp">
+      <Filter>Source Files\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="WrapperMessage.pb.cc">
+      <Filter>Source Files\Protobuf\Messages</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -101,9 +104,6 @@
     <ClInclude Include="SocketIOSessionManager.h">
       <Filter>Header Files\Socket</Filter>
     </ClInclude>
-    <ClInclude Include="Authenticate.pb.h">
-      <Filter>Header Files\Protobuf\Messages</Filter>
-    </ClInclude>
     <ClInclude Include="MultiplayerRoom.h">
       <Filter>Header Files\Multiplayer</Filter>
     </ClInclude>
@@ -112,6 +112,12 @@
     </ClInclude>
     <ClInclude Include="MultiplayerException.h">
       <Filter>Header Files\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketIOMessageParser.h">
+      <Filter>Header Files\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="WrapperMessage.pb.h">
+      <Filter>Header Files\Protobuf\Messages</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

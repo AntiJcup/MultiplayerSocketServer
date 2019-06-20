@@ -11,17 +11,17 @@ void SocketIOSessionManager::CreateNewSession(boost::asio::ip::tcp::socket&& soc
 	session->Run();
 }
 
-void SocketIOSessionManager::Broadcast()
+void SocketIOSessionManager::Broadcast(std::shared_ptr<google::protobuf::MessageLite> message)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
 
 	for (auto& session : sessions_)
 	{
-		session.second->
+		//session.second->
 	}
 }
 
-void SocketIOSessionManager::Send(const boost::uuids::uuid& session_id)
+void SocketIOSessionManager::Send(const boost::uuids::uuid& session_id, std::shared_ptr<google::protobuf::MessageLite> message)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
 	/*sessions_[session_id]->*/

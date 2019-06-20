@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <memory>
 
+#include "WrapperMessage.pb.h"
+
 class MultiplayerSession;
 
 enum class RoomState
@@ -66,8 +68,8 @@ public:
 	void AddPlayer(std::shared_ptr<MultiplayerSession> player);
 	void RemovePlayer(const boost::uuids::uuid& player_id);
 
-	void Broadcast();
-	void Send(const boost::uuids::uuid& session_id);
+	void Broadcast(std::shared_ptr<google::protobuf::MessageLite> message);
+	void Send(const boost::uuids::uuid& session_id, std::shared_ptr<google::protobuf::MessageLite> message);
 
 private:
 	std::size_t max_room_size_;
