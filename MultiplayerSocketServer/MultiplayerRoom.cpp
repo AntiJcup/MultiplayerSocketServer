@@ -4,10 +4,21 @@
 
 #include <boost/thread/lock_guard.hpp>
 
-MultiplayerRoom::MultiplayerRoom(const std::size_t& max_room_size)
-	: max_room_size_(max_room_size)
+MultiplayerRoom::MultiplayerRoom(const std::size_t& max_room_size, boost::beast::net::io_context& io_context)
+	: max_room_size_(max_room_size), io_context_(io_context)
 {
 
+}
+
+void MultiplayerRoom::Initialize()
+{
+
+}
+
+std::size_t MultiplayerRoom::get_player_count()
+{
+	boost::lock_guard<MultiplayerRoom> guard(*this);
+	return players_.size();
 }
 
 void MultiplayerRoom::AddPlayer(std::shared_ptr<MultiplayerSession> player)
@@ -48,4 +59,14 @@ void MultiplayerRoom::Send(const boost::uuids::uuid& player_id, std::shared_ptr<
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
 	players_[player_id].player->Send(*message);
+}
+
+boost::signals2::connection MultiplayerRoom::ListenToComplete(const complete_signal_t::slot_type& subscriber)
+{
+	return complete_sig_.connect(subscriber);
+}
+
+void MultiplayerRoom::OnComplete()
+{
+	complete_sig_(this);
 }

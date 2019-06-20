@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClCompile Include="MultiplayerException.cpp" />
     <ClCompile Include="MultiplayerSession.cpp" />
+    <ClCompile Include="MultiplayerSessionManager.cpp" />
     <ClCompile Include="MultiplayerSocketServer.cpp" />
     <ClCompile Include="MultiplayerRoom.cpp" />
     <ClCompile Include="SocketIOException.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="MultiplayerException.h" />
     <ClInclude Include="MultiplayerRoom.h" />
     <ClInclude Include="MultiplayerSession.h" />
+    <ClInclude Include="MultiplayerSessionManager.h" />
     <ClInclude Include="SocketIOException.h" />
     <ClInclude Include="SocketIOListener.h" />
     <ClInclude Include="SocketIOManager.h" />

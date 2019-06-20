@@ -78,6 +78,9 @@
     <ClCompile Include="WrapperMessage.pb.cc">
       <Filter>Source Files\Protobuf\Messages</Filter>
     </ClCompile>
+    <ClCompile Include="MultiplayerSessionManager.cpp">
+      <Filter>Source Files\Multiplayer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -118,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="WrapperMessage.pb.h">
       <Filter>Header Files\Protobuf\Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiplayerSessionManager.h">
+      <Filter>Header Files\Multiplayer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,5 +4,7 @@
 
 class MultiplayerSession : public SocketIOSession
 {
+public:
+	MultiplayerSession(SocketIOSession* session);
 };
 

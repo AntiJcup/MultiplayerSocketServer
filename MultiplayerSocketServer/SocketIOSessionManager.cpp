@@ -3,12 +3,14 @@
 
 #include <boost/thread/lock_guard.hpp>
 
-void SocketIOSessionManager::CreateNewSession(boost::asio::ip::tcp::socket&& socket)
+std::shared_ptr<SocketIOSession> SocketIOSessionManager::CreateNewSession(boost::asio::ip::tcp::socket&& socket)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
 	auto session = std::make_shared<SocketIOSession>(std::move(socket), shared_from_this());
 	sessions_[session->get_id()] = session;
 	session->Run();
+
+	return session;
 }
 
 void SocketIOSessionManager::Broadcast(std::shared_ptr<google::protobuf::MessageLite> message)

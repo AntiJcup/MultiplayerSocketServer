@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "SocketIOManager.h"
+#include "MultiplayerSessionManager.h"
 
 int main()
 {
@@ -13,9 +14,9 @@ int main()
 	USHORT port = 8080;
 
 	SocketIOManager manager(24);
-	if (!manager.Initialize(std::make_shared<SocketIOListener>(manager.GetIOContext(), 
+	if (!manager.Initialize(std::make_shared<SocketIOListener>(manager.GetIOContext(),
 		boost::asio::ip::tcp::endpoint{ address, port },
-		std::make_shared<SocketIOSessionManager>())))
+		std::make_shared<MultiplayerSessionManager>(manager.GetIOContext()))))
 	{
 		return -1;
 	}

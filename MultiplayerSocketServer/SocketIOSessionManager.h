@@ -18,7 +18,7 @@ class SocketIOSessionManager : public std::enable_shared_from_this<SocketIOSessi
 	public boost::basic_lockable_adapter<boost::mutex>
 {
 public:
-	void CreateNewSession(boost::asio::ip::tcp::socket&& socket);
+	virtual std::shared_ptr<SocketIOSession> CreateNewSession(boost::asio::ip::tcp::socket&& socket);
 
 	void Broadcast(std::shared_ptr<google::protobuf::MessageLite> message);
 	void Send(const boost::uuids::uuid& session_id, std::shared_ptr<google::protobuf::MessageLite> message);
