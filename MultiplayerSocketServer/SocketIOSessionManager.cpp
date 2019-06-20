@@ -17,12 +17,13 @@ void SocketIOSessionManager::Broadcast(std::shared_ptr<google::protobuf::Message
 
 	for (auto& session : sessions_)
 	{
-		//session.second->
+		session.second->Send(*message);
 	}
 }
 
 void SocketIOSessionManager::Send(const boost::uuids::uuid& session_id, std::shared_ptr<google::protobuf::MessageLite> message)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
+	sessions_[session_id]->Send(*message);
 	/*sessions_[session_id]->*/
 }
