@@ -41,8 +41,11 @@ class MultiplayerRoom :
 {
 public:
 	typedef boost::signals2::signal<void(MultiplayerRoom*)> complete_signal_t;
+	typedef boost::signals2::signal<void(MultiplayerRoom*)> error_signal_t;
 
-	MultiplayerRoom(const std::size_t& max_room_size, boost::beast::net::io_context& io_context);
+	MultiplayerRoom(const std::size_t& max_room_size,
+		const std::size_t& min_room_size,
+		boost::beast::net::io_context& io_context);
 
 	void Initialize();
 
@@ -78,25 +81,31 @@ public:
 
 	std::size_t get_player_count();
 
+	std::vector<boost::uuids::uuid> get_player_ids();
+
 	void AddPlayer(std::shared_ptr<MultiplayerSession> player);
-	void RemovePlayer(const boost::uuids::uuid& player_id);
+	std::shared_ptr<MultiplayerSession> RemovePlayer(const boost::uuids::uuid& player_id);
 
 	void Broadcast(std::shared_ptr<google::protobuf::MessageLite> message);
 	void Send(const boost::uuids::uuid& player_id, std::shared_ptr<google::protobuf::MessageLite> message);
 
 	boost::signals2::connection ListenToComplete(const complete_signal_t::slot_type& subscriber);
+	boost::signals2::connection ListenToError(const error_signal_t::slot_type& subscriber);
 
 private:
 	std::size_t max_room_size_;
+	std::size_t min_room_size_;
 	RoomState room_state_{ RoomState::Lobby };
 	RoomSubState room_sub_state_{ RoomSubState::None };
 	std::unordered_map<boost::uuids::uuid, MultiplayerRoomSession, boost::hash<boost::uuids::uuid>> players_;
 	boost::uuids::uuid id_{ boost::uuids::random_generator()() };
 
 	complete_signal_t complete_sig_;
+	error_signal_t error_sig_;
 
 	boost::beast::net::io_context& io_context_;
 
 	void OnComplete();
+	void OnError();
 };
 

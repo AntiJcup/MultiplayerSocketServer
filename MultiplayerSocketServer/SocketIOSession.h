@@ -13,6 +13,13 @@
 
 class SocketIOSessionManager;
 
+enum class SessionState
+{
+	Default,
+	Connected,
+	Disconnected,
+};
+
 class SocketIOSession : public std::enable_shared_from_this<SocketIOSession>
 {
 public:
@@ -21,11 +28,19 @@ public:
 
 	SocketIOSession(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<SocketIOSessionManager> session_manager);
 
+	virtual ~SocketIOSession() = default;
+	SocketIOSession(SocketIOSession &&) = default;
+
 	void Run();
 
 	boost::uuids::uuid get_id()
 	{
 		return id_;
+	}
+
+	SessionState get_state()
+	{
+		return state_;
 	}
 
 	boost::signals2::connection ListenToDisconnect(const disconnect_signal_t::slot_type& subscriber);
@@ -63,5 +78,7 @@ private:
 
 	disconnect_signal_t disconnect_sig_;
 	message_signal_t message_sig_;
+
+	SessionState state_{ SessionState::Default };
 };
 

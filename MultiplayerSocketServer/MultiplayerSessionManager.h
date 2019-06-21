@@ -7,6 +7,7 @@
 class MultiplayerRoomManagerSession
 {
 public:
+	boost::signals2::scoped_connection error_connection;
 	boost::signals2::scoped_connection complete_connection;
 	std::shared_ptr<MultiplayerRoom> room;
 };
@@ -25,6 +26,8 @@ public:
 
 	void RemoveRoom(boost::uuids::uuid room_id);
 
+	void TransportPlayersToActiveLobby(boost::uuids::uuid room_id);
+
 	std::shared_ptr<MultiplayerRoom> get_current_lobby()
 	{
 		return current_lobby_;
@@ -35,6 +38,7 @@ public:
 		current_lobby_ = room;
 	}
 
+	void AddPlayerToCurrentLobbyRoom(std::shared_ptr<MultiplayerSession> player);
 private:
 	std::unordered_map<boost::uuids::uuid, MultiplayerRoomManagerSession, boost::hash<boost::uuids::uuid>> rooms_;
 	std::shared_ptr<MultiplayerRoom> current_lobby_;

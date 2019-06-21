@@ -76,6 +76,7 @@ void SocketIOSession::OnAccept(boost::beast::error_code ec)
 	if (ec)
 		throw SocketIOException("failed accept", ec);
 
+	state_ = SessionState::Connected;
 	// Read a message
 	DoRead();
 }
@@ -125,6 +126,7 @@ void SocketIOSession::OnWrite(boost::beast::error_code ec, std::size_t bytes_tra
 
 void SocketIOSession::OnDisconnect()
 {
+	state_ = SessionState::Disconnected;
 	disconnect_sig_(this); //Fire disconnect event
 }
 
