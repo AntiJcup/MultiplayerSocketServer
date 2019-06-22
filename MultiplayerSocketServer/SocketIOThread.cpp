@@ -1,9 +1,9 @@
 #include "SocketIOThread.h"
 
 SocketIOThread::SocketIOThread(boost::beast::net::io_context& io_context)
-	: io_context_(io_context)
+	: io_context_(io_context), boost::thread(&SocketIOThread::Start, this)
 {
-	Start();
+	
 }
 
 void SocketIOThread::Start()

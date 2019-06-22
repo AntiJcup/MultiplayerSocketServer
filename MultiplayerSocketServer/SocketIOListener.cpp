@@ -68,7 +68,7 @@ void SocketIOListener::OnAccept(boost::beast::error_code ec, boost::asio::ip::tc
 	}
 	else
 	{
-		session_manager_->CreateNewSession(std::move(socket));
+		auto session = session_manager_->CreateNewSession(std::move(socket));
 	}
 
 	// Accept another connection

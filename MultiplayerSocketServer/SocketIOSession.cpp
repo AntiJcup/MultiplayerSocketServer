@@ -77,6 +77,7 @@ void SocketIOSession::OnAccept(boost::beast::error_code ec)
 		throw SocketIOException("failed accept", ec);
 
 	state_ = SessionState::Connected;
+
 	// Read a message
 	DoRead();
 }
@@ -95,9 +96,10 @@ void SocketIOSession::OnRead(
 	std::size_t bytes_transferred)
 {
 	// This indicates that the session was closed
-	if (ec == boost::beast::websocket::error::closed)
+	if (ec == boost::beast::websocket::error::closed) {
 		OnDisconnect();
-	return;
+		return;
+	}
 
 	if (ec)
 		throw SocketIOException("failed read", ec);
@@ -114,8 +116,9 @@ void SocketIOSession::OnWrite(boost::beast::error_code ec, std::size_t bytes_tra
 {
 	boost::ignore_unused(bytes_transferred);
 
-	if (ec)
+	if (ec) {
 		throw SocketIOException("failed write", ec);
+	}
 
 	// Clear the buffer
 	buffer_.consume(buffer_.size());

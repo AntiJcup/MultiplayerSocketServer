@@ -9,6 +9,7 @@ class MultiplayerRoomManagerSession
 public:
 	boost::signals2::scoped_connection error_connection;
 	boost::signals2::scoped_connection complete_connection;
+	boost::signals2::scoped_connection start_connection;
 	std::shared_ptr<MultiplayerRoom> room;
 };
 

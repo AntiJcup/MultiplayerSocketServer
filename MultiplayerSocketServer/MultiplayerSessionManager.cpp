@@ -3,6 +3,7 @@
 
 static const std::size_t max_room_size = 4;
 static const std::size_t min_room_size = 2;
+static const std::size_t max_room_wait = 5;
 
 MultiplayerSessionManager::MultiplayerSessionManager(boost::beast::net::io_context& io_context)
 	: io_context_(io_context)
@@ -29,15 +30,16 @@ std::shared_ptr<SocketIOSession> MultiplayerSessionManager::CreateNewSession(boo
 			});
 		sessions_[session->get_id()] = std::move(session_wrapper);
 	}
-	
+
 	AddPlayerToCurrentLobbyRoom(session);
 	return session;
 }
 
 std::shared_ptr<MultiplayerRoom> MultiplayerSessionManager::NewLobby()
 {
-	auto new_room = std::make_shared<MultiplayerRoom>(max_room_size, min_room_size, io_context_);
+	auto new_room = std::make_shared<MultiplayerRoom>(max_room_size, min_room_size, max_room_wait, io_context_);
 	AddRoom(new_room);
+	new_room->Initialize();
 	set_current_lobby(new_room);
 
 	return new_room;
@@ -56,6 +58,11 @@ void MultiplayerSessionManager::AddRoom(std::shared_ptr<MultiplayerRoom> room)
 		});
 
 	session.error_connection = room->ListenToError(
+		[this](auto room, auto error, auto msg) {
+			RemoveRoom(room->get_id());
+		});
+
+	session.start_connection = room->ListenToStart(
 		[this](auto room) {
 			RemoveRoom(room->get_id());
 		});

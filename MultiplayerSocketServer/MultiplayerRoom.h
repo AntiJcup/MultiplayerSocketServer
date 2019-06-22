@@ -6,6 +6,7 @@
 #include <boost/signals2/signal.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/beast/core.hpp>
+#include <boost/asio.hpp>
 
 #include <unordered_map>
 #include <memory>
@@ -29,6 +30,11 @@ enum class RoomSubState
 	Waiting = 4,
 };
 
+enum class ErrorCode
+{
+	MinRoomSizeLost,
+};
+
 class MultiplayerRoomSession
 {
 public:
@@ -41,10 +47,12 @@ class MultiplayerRoom :
 {
 public:
 	typedef boost::signals2::signal<void(MultiplayerRoom*)> complete_signal_t;
-	typedef boost::signals2::signal<void(MultiplayerRoom*)> error_signal_t;
+	typedef boost::signals2::signal<void(MultiplayerRoom*, ErrorCode, const char*)> error_signal_t;
+	typedef boost::signals2::signal<void(MultiplayerRoom*)> start_signal_t;
 
 	MultiplayerRoom(const std::size_t& max_room_size,
 		const std::size_t& min_room_size,
+		const std::size_t& max_start_time,
 		boost::beast::net::io_context& io_context);
 
 	void Initialize();
@@ -69,9 +77,19 @@ public:
 		room_sub_state_ = room_sub_state;
 	}
 
-	std::size_t get_max_room_size()
+	const std::size_t& get_max_room_size()
 	{
 		return max_room_size_;
+	}
+
+	const std::size_t& get_min_room_size()
+	{
+		return min_room_size_;
+	}
+
+	const std::size_t& get_max_start_time()
+	{
+		return max_start_time_;
 	}
 
 	boost::uuids::uuid get_id()
@@ -91,21 +109,27 @@ public:
 
 	boost::signals2::connection ListenToComplete(const complete_signal_t::slot_type& subscriber);
 	boost::signals2::connection ListenToError(const error_signal_t::slot_type& subscriber);
+	boost::signals2::connection ListenToStart(const start_signal_t::slot_type& subscriber);
 
 private:
 	std::size_t max_room_size_;
 	std::size_t min_room_size_;
+	std::size_t max_start_time_;
 	RoomState room_state_{ RoomState::Lobby };
 	RoomSubState room_sub_state_{ RoomSubState::None };
 	std::unordered_map<boost::uuids::uuid, MultiplayerRoomSession, boost::hash<boost::uuids::uuid>> players_;
 	boost::uuids::uuid id_{ boost::uuids::random_generator()() };
 
+	boost::asio::deadline_timer start_timer_;
+
 	complete_signal_t complete_sig_;
 	error_signal_t error_sig_;
+	start_signal_t start_sig_;
 
 	boost::beast::net::io_context& io_context_;
 
 	void OnComplete();
-	void OnError();
+	void OnError(ErrorCode error, const char* msg);
+	void OnStartTimer();
 };
 
