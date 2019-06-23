@@ -153,11 +153,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseEntity.cpp" />
     <ClCompile Include="MultiplayerException.cpp" />
+    <ClCompile Include="MultiplayerRoomMessageHandler.cpp" />
     <ClCompile Include="MultiplayerSession.cpp" />
     <ClCompile Include="MultiplayerSessionManager.cpp" />
     <ClCompile Include="MultiplayerSocketServer.cpp" />
     <ClCompile Include="MultiplayerRoom.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Point.cpp" />
     <ClCompile Include="SocketIOException.cpp" />
     <ClCompile Include="SocketIOListener.cpp" />
     <ClCompile Include="SocketIOManager.cpp" />
@@ -172,10 +176,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseEntity.h" />
     <ClInclude Include="MultiplayerException.h" />
     <ClInclude Include="MultiplayerRoom.h" />
+    <ClInclude Include="MultiplayerRoomMessageHandler.h" />
     <ClInclude Include="MultiplayerSession.h" />
     <ClInclude Include="MultiplayerSessionManager.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Point.h" />
     <ClInclude Include="SocketIOException.h" />
     <ClInclude Include="SocketIOListener.h" />
     <ClInclude Include="SocketIOManager.h" />

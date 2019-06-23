@@ -10,9 +10,11 @@
 
 #include <unordered_map>
 #include <memory>
+#include <atomic>
 
 #include "WrapperMessage.pb.h"
 #include "MultiplayerSession.h"
+#include "MultiplayerRoomMessageHandler.h"
 
 enum class RoomState
 {
@@ -34,6 +36,8 @@ enum class ErrorCode
 {
 	MinRoomSizeLost,
 };
+
+class MultiplayerRoomMessageHandler;
 
 class MultiplayerRoomSession
 {
@@ -61,7 +65,7 @@ public:
 
 	RoomState get_room_state() const
 	{
-		return room_state_;
+		return room_state_.load();
 	}
 
 	void set_room_state(RoomState room_state)
@@ -71,7 +75,7 @@ public:
 
 	RoomSubState get_room_sub_state() const
 	{
-		return room_sub_state_;
+		return room_sub_state_.load();
 	}
 
 	void set_room_sub_state(RoomSubState room_sub_state)
@@ -117,8 +121,8 @@ private:
 	std::size_t max_room_size_;
 	std::size_t min_room_size_;
 	std::size_t max_start_time_;
-	RoomState room_state_{ RoomState::Lobby };
-	RoomSubState room_sub_state_{ RoomSubState::None };
+	std::atomic<RoomState> room_state_{ RoomState::Lobby };
+	std::atomic<RoomSubState> room_sub_state_{ RoomSubState::None };
 	std::unordered_map<boost::uuids::uuid, MultiplayerRoomSession, boost::hash<boost::uuids::uuid>> sessions_;
 	boost::uuids::uuid id_{ boost::uuids::random_generator()() };
 
@@ -130,10 +134,14 @@ private:
 
 	boost::beast::net::io_context& io_context_;
 
+	std::unordered_map<RoomState, std::shared_ptr<MultiplayerRoomMessageHandler>> message_handlers_;
+
 	void OnComplete();
 	void OnError(ErrorCode error, const char* msg);
 	void OnStartTimer();
 
 	void OnMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message);
+
+	friend class MultiplayerRoomMessageHandler;
 };
 

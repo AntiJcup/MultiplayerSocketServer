@@ -19,7 +19,8 @@ MultiplayerRoom::MultiplayerRoom(const std::size_t& max_room_size,
 
 void MultiplayerRoom::Initialize()
 {
-
+	boost::lock_guard<MultiplayerRoom> guard(*this);
+	message_handlers_[RoomState::Lobby] = std::shared_ptr<MultiplayerRoomMessageHandler>(new LobbyMessageHandler(shared_from_this()));
 }
 
 #pragma region Getters
@@ -112,22 +113,7 @@ void MultiplayerRoom::Send(const boost::uuids::uuid& player_id, std::shared_ptr<
 
 void MultiplayerRoom::OnMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
 {
-	auto wrapper_message = std::dynamic_pointer_cast<google::protobuf::WrapperMessage>(message);
-	if (!wrapper_message)
-	{
-		return;
-	}
-
-	if (wrapper_message->has_move())
-	{
-		///TODO move player and broadcast move to rest of players
-	}
-	else if (wrapper_message->has_authenticate())
-	{
-		//TODO check in with aws cognito
-	}
-
-
+	message_handlers_[RoomState::Lobby]->HandleMessage(session, message);
 }
 #pragma endregion Messaging
 
