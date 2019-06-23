@@ -97,13 +97,9 @@ void SocketIOSession::OnRead(
 	std::size_t bytes_transferred)
 {
 	// This indicates that the session was closed
-	if (ec == boost::beast::websocket::error::closed) {
+	if (ec) {
 		OnDisconnect();
 		return;
-	}
-
-	if (ec) {
-		throw SocketIOException("failed read", ec);
 	}
 
 	if (auto message_ptr = parser_.TryParseMessage(bytes_transferred, buffer_))
