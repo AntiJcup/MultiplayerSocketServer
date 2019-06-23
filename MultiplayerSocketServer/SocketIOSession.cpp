@@ -73,8 +73,9 @@ void SocketIOSession::Write(const char* buffer, std::size_t buffer_size)
 
 void SocketIOSession::OnAccept(boost::beast::error_code ec)
 {
-	if (ec)
+	if (ec) {
 		throw SocketIOException("failed accept", ec);
+	}
 
 	state_ = SessionState::Connected;
 
@@ -101,8 +102,9 @@ void SocketIOSession::OnRead(
 		return;
 	}
 
-	if (ec)
+	if (ec) {
 		throw SocketIOException("failed read", ec);
+	}
 
 	if (auto message_ptr = parser_.TryParseMessage(bytes_transferred, buffer_))
 	{

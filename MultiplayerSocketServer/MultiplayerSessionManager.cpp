@@ -12,7 +12,7 @@ MultiplayerSessionManager::MultiplayerSessionManager(boost::beast::net::io_conte
 
 void MultiplayerSessionManager::Initialize()
 {
-	NewLobby();
+	auto new_lobby = NewLobby();
 }
 
 std::shared_ptr<SocketIOSession> MultiplayerSessionManager::CreateNewSession(boost::asio::ip::tcp::socket&& socket)
@@ -20,16 +20,18 @@ std::shared_ptr<SocketIOSession> MultiplayerSessionManager::CreateNewSession(boo
 {
 	auto session = std::make_shared<MultiplayerSession>(std::move(socket), shared_from_this());
 	session->Run();
-	{
-		boost::lock_guard<MultiplayerSessionManager> guard(*this);
-		SocketIOSessionWrapper session_wrapper = {};
-		session_wrapper.session = session;
-		session_wrapper.disconnect_connection = session->ListenToDisconnect(
-			[this](auto session) {
-				RemoveSession(session->get_id());
-			});
-		sessions_[session->get_id()] = std::move(session_wrapper);
-	}
+
+	//Dont add to sessions
+	//{
+	//	boost::lock_guard<MultiplayerSessionManager> guard(*this);
+	//	SocketIOSessionWrapper session_wrapper = {};
+	//	session_wrapper.session = session;
+	//	session_wrapper.disconnect_connection = session->ListenToDisconnect(
+	//		[this](auto session) {
+	//			RemoveSession(session->get_id());
+	//		});
+	//	sessions_[session->get_id()] = std::move(session_wrapper);
+	//}
 
 	AddPlayerToCurrentLobbyRoom(session);
 	return session;
@@ -59,6 +61,7 @@ void MultiplayerSessionManager::AddRoom(std::shared_ptr<MultiplayerRoom> room)
 
 	session.error_connection = room->ListenToError(
 		[this](auto room, auto error, auto msg) {
+			TransportPlayersToActiveLobby(room->get_id());
 			RemoveRoom(room->get_id());
 		});
 
@@ -88,7 +91,7 @@ void MultiplayerSessionManager::TransportPlayersToActiveLobby(boost::uuids::uuid
 
 	for (auto& player_id : player_ids)
 	{
-		room->RemovePlayer(player_id);
+		auto removed_player = room->RemovePlayer(player_id);
 		AddPlayerToCurrentLobbyRoom(std::dynamic_pointer_cast<MultiplayerSession>(sessions_[player_id].session));
 	}
 }
