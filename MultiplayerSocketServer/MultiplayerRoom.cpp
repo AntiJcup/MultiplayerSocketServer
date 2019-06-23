@@ -25,14 +25,14 @@ void MultiplayerRoom::Initialize()
 std::size_t MultiplayerRoom::get_player_count()
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
-	return players_.size();
+	return sessions_.size();
 }
 
 std::vector<boost::uuids::uuid> MultiplayerRoom::get_player_ids()
 {
-	std::vector<boost::uuids::uuid> player_ids(players_.size());
+	std::vector<boost::uuids::uuid> player_ids(sessions_.size());
 	boost::lock_guard<MultiplayerRoom> guard(*this);
-	for (auto& player : players_)
+	for (auto& player : sessions_)
 	{
 		player_ids.push_back(player.second.player->get_id());
 	}
@@ -40,10 +40,10 @@ std::vector<boost::uuids::uuid> MultiplayerRoom::get_player_ids()
 	return player_ids;
 }
 
-void MultiplayerRoom::AddPlayer(std::shared_ptr<MultiplayerSession> player)
+void MultiplayerRoom::AddSession(std::shared_ptr<MultiplayerSession> player)
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
-	if (players_.size() >= get_max_room_size())
+	if (sessions_.size() >= get_max_room_size())
 	{
 		throw MultiplayerRoomException("too many players in this room", MultiplayerRoomExceptionType::RoomFull);
 	}
@@ -52,11 +52,11 @@ void MultiplayerRoom::AddPlayer(std::shared_ptr<MultiplayerSession> player)
 	session.player = player;
 	session.disconnect_connection = player->ListenToDisconnect(
 		[this](auto session) {
-			RemovePlayer(session->get_id());
+			RemoveSession(session->get_id());
 		});
-	players_[player->get_id()] = std::move(session);
+	sessions_[player->get_id()] = std::move(session);
 
-	if (players_.size() >= get_min_room_size())
+	if (sessions_.size() >= get_min_room_size())
 	{
 		start_timer_.expires_from_now(boost::posix_time::seconds(get_max_start_time()));
 		start_timer_.async_wait([this](auto error_code)
@@ -64,20 +64,20 @@ void MultiplayerRoom::AddPlayer(std::shared_ptr<MultiplayerSession> player)
 				OnStartTimer();
 			});
 	}
-	else if (players_.size() >= get_max_room_size())
+	else if (sessions_.size() >= get_max_room_size())
 	{
 		start_timer_.cancel();
 		OnStartTimer();
 	}
 }
 
-std::shared_ptr<MultiplayerSession> MultiplayerRoom::RemovePlayer(const boost::uuids::uuid& player_id)
+std::shared_ptr<MultiplayerSession> MultiplayerRoom::RemoveSession(const boost::uuids::uuid& player_id)
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
-	auto player = players_[player_id].player;
-	players_.erase(player_id);
+	auto player = sessions_[player_id].player;
+	sessions_.erase(player_id);
 
-	if (players_.size() < get_min_room_size() && get_room_state() == RoomState::Game)
+	if (sessions_.size() < get_min_room_size() && get_room_state() == RoomState::Game)
 	{
 		OnError(ErrorCode::MinRoomSizeLost, "Player left");
 	}
@@ -89,7 +89,7 @@ void MultiplayerRoom::Broadcast(std::shared_ptr<google::protobuf::MessageLite> m
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
 
-	for (auto& session : players_)
+	for (auto& session : sessions_)
 	{
 		session.second.player->Send(*message);
 	}
@@ -98,7 +98,7 @@ void MultiplayerRoom::Broadcast(std::shared_ptr<google::protobuf::MessageLite> m
 void MultiplayerRoom::Send(const boost::uuids::uuid& player_id, std::shared_ptr<google::protobuf::MessageLite> message)
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
-	players_[player_id].player->Send(*message);
+	sessions_[player_id].player->Send(*message);
 }
 
 boost::signals2::connection MultiplayerRoom::ListenToComplete(const complete_signal_t::slot_type& subscriber)

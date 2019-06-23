@@ -91,7 +91,7 @@ void MultiplayerSessionManager::TransportPlayersToActiveLobby(boost::uuids::uuid
 
 	for (auto& player_id : player_ids)
 	{
-		auto removed_player = room->RemovePlayer(player_id);
+		auto removed_player = room->RemoveSession(player_id);
 		AddPlayerToCurrentLobbyRoom(std::dynamic_pointer_cast<MultiplayerSession>(sessions_[player_id].session));
 	}
 }
@@ -111,5 +111,5 @@ void MultiplayerSessionManager::AddPlayerToCurrentLobbyRoom(std::shared_ptr<Mult
 		lobby_room = NewLobby();
 	}
 
-	lobby_room->AddPlayer(player);
+	lobby_room->AddSession(player);
 }

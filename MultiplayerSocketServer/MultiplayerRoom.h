@@ -101,8 +101,8 @@ public:
 
 	std::vector<boost::uuids::uuid> get_player_ids();
 
-	void AddPlayer(std::shared_ptr<MultiplayerSession> player);
-	std::shared_ptr<MultiplayerSession> RemovePlayer(const boost::uuids::uuid& player_id);
+	void AddSession(std::shared_ptr<MultiplayerSession> player);
+	std::shared_ptr<MultiplayerSession> RemoveSession(const boost::uuids::uuid& player_id);
 
 	void Broadcast(std::shared_ptr<google::protobuf::MessageLite> message);
 	void Send(const boost::uuids::uuid& player_id, std::shared_ptr<google::protobuf::MessageLite> message);
@@ -117,7 +117,7 @@ private:
 	std::size_t max_start_time_;
 	RoomState room_state_{ RoomState::Lobby };
 	RoomSubState room_sub_state_{ RoomSubState::None };
-	std::unordered_map<boost::uuids::uuid, MultiplayerRoomSession, boost::hash<boost::uuids::uuid>> players_;
+	std::unordered_map<boost::uuids::uuid, MultiplayerRoomSession, boost::hash<boost::uuids::uuid>> sessions_;
 	boost::uuids::uuid id_{ boost::uuids::random_generator()() };
 
 	boost::asio::deadline_timer start_timer_;
