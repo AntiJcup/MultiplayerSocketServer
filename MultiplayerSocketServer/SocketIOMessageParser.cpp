@@ -4,7 +4,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <boost/asio/streambuf.hpp>
 
-std::shared_ptr<google::protobuf::WrapperMessage> SocketIOMessageParser::TryParseMessage(std::size_t size, boost::beast::flat_buffer& buffer)
+std::shared_ptr<google::protobuf::MessageLite> SocketIOMessageParser::TryParseMessage(std::size_t size, boost::beast::flat_buffer& buffer)
 {
 	google::protobuf::io::ArrayInputStream array_input_stream(
 		boost::asio::buffer_cast<const char*>(buffer.cdata()),

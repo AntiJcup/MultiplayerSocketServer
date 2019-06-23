@@ -10,7 +10,7 @@
 class SocketIOMessageParser
 {
 public:
-	std::shared_ptr<google::protobuf::WrapperMessage> TryParseMessage(std::size_t size, boost::beast::flat_buffer& buffer);
+	std::shared_ptr<google::protobuf::MessageLite> TryParseMessage(std::size_t size, boost::beast::flat_buffer& buffer);
 
 private:
 

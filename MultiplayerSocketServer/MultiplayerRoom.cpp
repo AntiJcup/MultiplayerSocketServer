@@ -22,6 +22,7 @@ void MultiplayerRoom::Initialize()
 
 }
 
+#pragma region Getters
 std::size_t MultiplayerRoom::get_player_count()
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
@@ -39,7 +40,9 @@ std::vector<boost::uuids::uuid> MultiplayerRoom::get_player_ids()
 
 	return player_ids;
 }
+#pragma endregion Getters
 
+#pragma region Sessions
 void MultiplayerRoom::AddSession(std::shared_ptr<MultiplayerSession> player)
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
@@ -53,6 +56,10 @@ void MultiplayerRoom::AddSession(std::shared_ptr<MultiplayerSession> player)
 	session.disconnect_connection = player->ListenToDisconnect(
 		[this](auto session) {
 			RemoveSession(session->get_id());
+		});
+	session.message_connection = player->ListenToMessages(
+		[this](auto session, auto message) {
+			OnMessage(session, message);
 		});
 	sessions_[player->get_id()] = std::move(session);
 
@@ -84,7 +91,9 @@ std::shared_ptr<MultiplayerSession> MultiplayerRoom::RemoveSession(const boost::
 
 	return player;
 }
+#pragma endregion Sessions
 
+#pragma region Messaging
 void MultiplayerRoom::Broadcast(std::shared_ptr<google::protobuf::MessageLite> message)
 {
 	boost::lock_guard<MultiplayerRoom> guard(*this);
@@ -101,6 +110,28 @@ void MultiplayerRoom::Send(const boost::uuids::uuid& player_id, std::shared_ptr<
 	sessions_[player_id].player->Send(*message);
 }
 
+void MultiplayerRoom::OnMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
+{
+	auto wrapper_message = std::dynamic_pointer_cast<google::protobuf::WrapperMessage>(message);
+	if (!wrapper_message)
+	{
+		return;
+	}
+
+	if (wrapper_message->has_move())
+	{
+		///TODO move player and broadcast move to rest of players
+	}
+	else if (wrapper_message->has_authenticate())
+	{
+		//TODO check in with aws cognito
+	}
+
+
+}
+#pragma endregion Messaging
+
+#pragma region Listen
 boost::signals2::connection MultiplayerRoom::ListenToComplete(const complete_signal_t::slot_type& subscriber)
 {
 	return complete_sig_.connect(subscriber);
@@ -118,16 +149,17 @@ boost::signals2::connection MultiplayerRoom::ListenToStart(const start_signal_t:
 
 void MultiplayerRoom::OnComplete()
 {
-	complete_sig_(this);
+	complete_sig_(shared_from_this());
 }
 
 void MultiplayerRoom::OnError(ErrorCode error, const char* msg)
 {
-	error_sig_(this, error, msg);
+	error_sig_(shared_from_this(), error, msg);
 }
 
 void MultiplayerRoom::OnStartTimer()
 {
-	start_sig_(this);
+	start_sig_(shared_from_this());
 	set_room_state(RoomState::Game);
 }
+#pragma endregion Listen

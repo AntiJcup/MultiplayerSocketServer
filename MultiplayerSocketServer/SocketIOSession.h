@@ -23,13 +23,13 @@ enum class SessionState
 class SocketIOSession : public std::enable_shared_from_this<SocketIOSession>
 {
 public:
-	typedef boost::signals2::signal<void(SocketIOSession*)> disconnect_signal_t;
-	typedef boost::signals2::signal<void(SocketIOSession*, std::shared_ptr<google::protobuf::MessageLite>)> message_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<SocketIOSession>)> disconnect_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<SocketIOSession>, std::shared_ptr<google::protobuf::MessageLite>)> message_signal_t;
 
 	SocketIOSession(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<SocketIOSessionManager> session_manager);
 
 	virtual ~SocketIOSession() = default;
-	SocketIOSession(SocketIOSession &&) = default;
+	SocketIOSession(SocketIOSession&&) = default;
 
 	void Run();
 

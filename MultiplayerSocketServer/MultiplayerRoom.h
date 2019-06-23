@@ -39,16 +39,18 @@ class MultiplayerRoomSession
 {
 public:
 	boost::signals2::scoped_connection disconnect_connection;
+	boost::signals2::scoped_connection message_connection;
 	std::shared_ptr<MultiplayerSession> player;
 };
 
 class MultiplayerRoom :
-	public boost::basic_lockable_adapter<boost::mutex>
+	public boost::basic_lockable_adapter<boost::mutex>,
+	public std::enable_shared_from_this<MultiplayerRoom>
 {
 public:
-	typedef boost::signals2::signal<void(MultiplayerRoom*)> complete_signal_t;
-	typedef boost::signals2::signal<void(MultiplayerRoom*, ErrorCode, const char*)> error_signal_t;
-	typedef boost::signals2::signal<void(MultiplayerRoom*)> start_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>)> complete_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>, ErrorCode, const char*)> error_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>)> start_signal_t;
 
 	MultiplayerRoom(const std::size_t& max_room_size,
 		const std::size_t& min_room_size,
@@ -131,5 +133,7 @@ private:
 	void OnComplete();
 	void OnError(ErrorCode error, const char* msg);
 	void OnStartTimer();
+
+	void OnMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message);
 };
 

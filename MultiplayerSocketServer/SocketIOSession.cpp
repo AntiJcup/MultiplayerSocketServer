@@ -128,10 +128,10 @@ void SocketIOSession::OnWrite(boost::beast::error_code ec, std::size_t bytes_tra
 void SocketIOSession::OnDisconnect()
 {
 	state_ = SessionState::Disconnected;
-	disconnect_sig_(this); //Fire disconnect event
+	disconnect_sig_(shared_from_this()); //Fire disconnect event
 }
 
 void SocketIOSession::OnMessage(std::shared_ptr<google::protobuf::MessageLite> message)
 {
-	message_sig_(this, message);
+	message_sig_(shared_from_this(), message);
 }
