@@ -5,7 +5,7 @@ static const std::size_t max_room_size = 4;
 static const std::size_t min_room_size = 2;
 static const std::size_t max_room_wait = 5;
 
-MultiplayerSessionManager::MultiplayerSessionManager(boost::beast::net::io_context& io_context)
+MultiplayerSessionManager::MultiplayerSessionManager(std::shared_ptr<boost::beast::net::io_context> io_context)
 	: io_context_(io_context)
 {
 }

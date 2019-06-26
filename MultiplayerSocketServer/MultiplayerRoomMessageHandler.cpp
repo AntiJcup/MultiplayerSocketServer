@@ -13,14 +13,14 @@ LobbyMessageHandler::LobbyMessageHandler(std::shared_ptr<MultiplayerRoom> room)
 
 void LobbyMessageHandler::HandleMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
 {
-	switch (room_->get_room_sub_state())
-	{
-	case RoomSubState::Waiting:
-	case RoomSubState::Done:
-		break;
-	default:
-		return;
-	}
+	//switch (room_->get_room_sub_state())
+	//{
+	//case RoomSubState::Waiting:
+	//case RoomSubState::Done:
+	//	break;
+	//default:
+	//	return;
+	//}
 
 	auto wrapper_message = std::dynamic_pointer_cast<google::protobuf::WrapperMessage>(message);
 	if (!wrapper_message)
@@ -44,14 +44,14 @@ GameMessageHandler::GameMessageHandler(std::shared_ptr<MultiplayerRoom> room)
 
 void GameMessageHandler::HandleMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
 {
-	switch (room_->get_room_sub_state())
+	/*witch (room_->get_room_sub_state())
 	{
 	case RoomSubState::Waiting:
 	case RoomSubState::Done:
 		break;
 	default:
 		return;
-	}
+	}*/
 
 	auto wrapper_message = std::dynamic_pointer_cast<google::protobuf::WrapperMessage>(message);
 	if (!wrapper_message)

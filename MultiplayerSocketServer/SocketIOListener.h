@@ -8,7 +8,7 @@
 class SocketIOListener : public std::enable_shared_from_this<SocketIOListener>
 {
 public:
-	SocketIOListener(boost::beast::net::io_context& io_context,
+	SocketIOListener(std::shared_ptr<boost::beast::net::io_context> io_context,
 		boost::asio::ip::tcp::endpoint end_point,
 		std::shared_ptr<SocketIOSessionManager> session_manager);
 
@@ -20,7 +20,7 @@ public:
 	}
 
 private:
-	boost::beast::net::io_context& io_context_;
+	std::shared_ptr<boost::beast::net::io_context> io_context_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	std::shared_ptr<SocketIOSessionManager> session_manager_;
 

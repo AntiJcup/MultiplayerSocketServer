@@ -16,7 +16,7 @@ public:
 class MultiplayerSessionManager : public SocketIOSessionManager
 {
 public:
-	MultiplayerSessionManager(boost::beast::net::io_context& io_context);
+	MultiplayerSessionManager(std::shared_ptr<boost::beast::net::io_context> io_context);
 	void Initialize();
 
 	virtual std::shared_ptr<SocketIOSession> CreateNewSession(boost::asio::ip::tcp::socket&& socket) override;
@@ -43,6 +43,6 @@ public:
 private:
 	std::unordered_map<boost::uuids::uuid, MultiplayerRoomManagerSession, boost::hash<boost::uuids::uuid>> rooms_;
 	std::shared_ptr<MultiplayerRoom> current_lobby_;
-	boost::beast::net::io_context& io_context_;
+	std::shared_ptr<boost::beast::net::io_context> io_context_;
 };
 

@@ -7,10 +7,10 @@
 class SocketIOThread : public boost::thread
 {
 public:
-	SocketIOThread(boost::beast::net::io_context& io_context);
+	SocketIOThread(std::shared_ptr<boost::beast::net::io_context> io_context);
 
 	void Start();
 
 private:
-	boost::beast::net::io_context& io_context_;
+	std::shared_ptr<boost::beast::net::io_context> io_context_;
 };

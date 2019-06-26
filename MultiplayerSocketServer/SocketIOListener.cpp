@@ -5,10 +5,10 @@
 #include <boost/asio/strand.hpp>
 #include <memory>
 
-SocketIOListener::SocketIOListener(boost::beast::net::io_context& io_context,
+SocketIOListener::SocketIOListener(std::shared_ptr<boost::beast::net::io_context> io_context,
 	boost::asio::ip::tcp::endpoint end_point,
 	std::shared_ptr<SocketIOSessionManager> session_manager)
-	: io_context_(io_context), acceptor_(io_context), session_manager_(session_manager)
+	: io_context_(io_context), acceptor_(*io_context), session_manager_(session_manager)
 {
 	boost::beast::error_code ec;
 
@@ -54,7 +54,7 @@ void SocketIOListener::Run()
 void SocketIOListener::DoAccept()
 {
 	acceptor_.async_accept(
-		boost::asio::make_strand(io_context_),
+		boost::asio::make_strand(*io_context_),
 		boost::beast::bind_front_handler(
 			&SocketIOListener::OnAccept,
 			shared_from_this()));

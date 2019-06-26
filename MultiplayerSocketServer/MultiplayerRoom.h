@@ -8,6 +8,10 @@
 #include <boost/beast/core.hpp>
 #include <boost/asio.hpp>
 
+#include <boost/msm/front/state_machine_def.hpp>
+#include <boost/msm/back/state_machine.hpp>
+#include <boost/msm/front/functor_row.hpp>
+
 #include <unordered_map>
 #include <memory>
 #include <atomic>
@@ -15,22 +19,6 @@
 #include "WrapperMessage.pb.h"
 #include "MultiplayerSession.h"
 #include "MultiplayerRoomMessageHandler.h"
-
-enum class RoomState
-{
-	Lobby = 0,
-	Game = 1,
-	Complete = 2,
-};
-
-enum class RoomSubState
-{
-	None = 0,
-	Loading = 1,
-	Starting = 2,
-	Done = 3,
-	Waiting = 4,
-};
 
 enum class ErrorCode
 {
@@ -47,41 +35,95 @@ public:
 	std::shared_ptr<MultiplayerSession> player;
 };
 
-class MultiplayerRoom :
+class MultiplayerRoom_ :
+	public boost::msm::front::state_machine_def<MultiplayerRoom_>,
 	public boost::basic_lockable_adapter<boost::mutex>,
-	public std::enable_shared_from_this<MultiplayerRoom>
+	public std::enable_shared_from_this<MultiplayerRoom_>
 {
 public:
-	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>)> complete_signal_t;
-	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>, ErrorCode, const char*)> error_signal_t;
-	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>)> start_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom_>)> complete_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom_>, ErrorCode, const char*)> error_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom_>)> start_signal_t;
 
-	MultiplayerRoom(const std::size_t& max_room_size,
+#pragma region States
+	struct Lobby_ : public boost::msm::front::state_machine_def<Lobby_>
+	{
+		struct WaitingForPlayers : public boost::msm::front::state<>
+		{
+
+		};
+
+		struct Full : public boost::msm::front::state<>
+		{
+
+		};
+		// optional entry/exit methods
+		//template <class Event,class FSM>
+		//void on_entry(Event const&,FSM& ) {std::cout << "entering: Waiting" << std::endl;}
+		//template <class Event,class FSM>
+		//void on_exit(Event const&,FSM& ) {std::cout << "leaving: Waiting" << std::endl;}
+
+		typedef WaitingForPlayers initial_state;
+	};
+	typedef boost::msm::back::state_machine<Lobby_> Lobby;
+
+	struct Game_ : public boost::msm::front::state_machine_def<Game_>
+	{
+		struct Loading : public boost::msm::front::state<>
+		{
+
+		};
+
+		struct Playing : public boost::msm::front::state<>
+		{
+
+		};
+		// optional entry/exit methods
+		//template <class Event,class FSM>
+		//void on_entry(Event const&,FSM& ) {std::cout << "entering: Waiting" << std::endl;}
+		//template <class Event,class FSM>
+		//void on_exit(Event const&,FSM& ) {std::cout << "leaving: Waiting" << std::endl;}
+
+		typedef Loading initial_state;
+	};
+	typedef boost::msm::back::state_machine<Game_> Game;
+
+	struct Closed : public boost::msm::front::state<>
+	{
+		// optional entry/exit methods
+		//template <class Event,class FSM>
+		//void on_entry(Event const&,FSM& ) {std::cout << "entering: Waiting" << std::endl;}
+		//template <class Event,class FSM>
+		//void on_exit(Event const&,FSM& ) {std::cout << "leaving: Waiting" << std::endl;}
+	};
+
+	typedef Lobby initial_state;
+#pragma endregion States
+
+#pragma region Events
+	struct StartGame {};
+	struct ReadyGame {};
+	struct FinishGame {};
+	struct ErrorLobby {};
+#pragma endregion Events
+
+#pragma region TransitionTable
+	// Transition table for Playing
+	struct transition_table : boost::mpl::vector<
+		//								Start       Event        Next            Action                 Guard
+		//							+---------+--------------+---------+------------------------+----------------------+
+		boost::msm::front::Row <		Lobby, StartGame, Game, boost::msm::front::none, boost::msm::front::none			>,
+		boost::msm::front::Row <		Game, FinishGame, Closed, boost::msm::front::none, boost::msm::front::none		>,
+		boost::msm::front::Row <		Lobby, ErrorLobby, Closed, boost::msm::front::none, boost::msm::front::none			>
+	> {};
+#pragma endregion TransitionTable
+
+	MultiplayerRoom_(const std::size_t& max_room_size,
 		const std::size_t& min_room_size,
 		const std::size_t& max_start_time,
-		boost::beast::net::io_context& io_context);
+		std::shared_ptr<boost::beast::net::io_context> io_context);
 
 	void Initialize();
-
-	RoomState get_room_state() const
-	{
-		return room_state_.load();
-	}
-
-	void set_room_state(RoomState room_state)
-	{
-		room_state_ = room_state;
-	}
-
-	RoomSubState get_room_sub_state() const
-	{
-		return room_sub_state_.load();
-	}
-
-	void set_room_sub_state(RoomSubState room_sub_state)
-	{
-		room_sub_state_ = room_sub_state;
-	}
 
 	const std::size_t& get_max_room_size()
 	{
@@ -121,8 +163,6 @@ private:
 	std::size_t max_room_size_;
 	std::size_t min_room_size_;
 	std::size_t max_start_time_;
-	std::atomic<RoomState> room_state_{ RoomState::Lobby };
-	std::atomic<RoomSubState> room_sub_state_{ RoomSubState::None };
 	std::unordered_map<boost::uuids::uuid, MultiplayerRoomSession, boost::hash<boost::uuids::uuid>> sessions_;
 	boost::uuids::uuid id_{ boost::uuids::random_generator()() };
 
@@ -132,9 +172,7 @@ private:
 	error_signal_t error_sig_;
 	start_signal_t start_sig_;
 
-	boost::beast::net::io_context& io_context_;
-
-	std::unordered_map<RoomState, std::shared_ptr<MultiplayerRoomMessageHandler>> message_handlers_;
+	std::shared_ptr<boost::beast::net::io_context> io_context_;
 
 	void OnComplete();
 	void OnError(ErrorCode error, const char* msg);
@@ -145,3 +183,4 @@ private:
 	friend class MultiplayerRoomMessageHandler;
 };
 
+typedef boost::msm::back::state_machine<MultiplayerRoom_> MultiplayerRoom;
