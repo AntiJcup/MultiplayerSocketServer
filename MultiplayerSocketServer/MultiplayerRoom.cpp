@@ -56,11 +56,11 @@ void MultiplayerRoom_::AddSession(std::shared_ptr<MultiplayerSession> player)
 	session.player = player;
 	session.disconnect_connection = player->ListenToDisconnect(
 		[this](auto session) {
-			RemoveSession(session->get_id());
+			io_context_->post(boost::bind(&MultiplayerRoom_::RemoveSession, this, session->get_id()));
 		});
 	session.message_connection = player->ListenToMessages(
 		[this](auto session, auto message) {
-			OnMessage(session, message);
+			io_context_->post(boost::bind(&MultiplayerRoom_::OnMessage, this, session, message));
 		});
 	sessions_[player->get_id()] = std::move(session);
 
@@ -69,23 +69,29 @@ void MultiplayerRoom_::AddSession(std::shared_ptr<MultiplayerSession> player)
 		start_timer_.expires_from_now(boost::posix_time::seconds(get_max_start_time()));
 		start_timer_.async_wait([this](auto error_code)
 			{
-				OnStartTimer();
+				io_context_->post(boost::bind(&MultiplayerRoom_::OnStartTimer, this));
 			});
 	}
 	else if (sessions_.size() >= get_max_room_size())
 	{
 		start_timer_.cancel();
-		OnStartTimer();
+		io_context_->post(boost::bind(&MultiplayerRoom_::OnStartTimer, this));
 	}
 }
 
 std::shared_ptr<MultiplayerSession> MultiplayerRoom_::RemoveSession(const boost::uuids::uuid& player_id)
 {
-	boost::lock_guard<MultiplayerRoom_> guard(*this);
-	auto player = sessions_[player_id].player;
-	sessions_.erase(player_id);
+	auto error = false;
+	std::shared_ptr<MultiplayerSession> player;
+	{
+		boost::lock_guard<MultiplayerRoom_> guard(*this);
+		player = sessions_[player_id].player;
+		sessions_.erase(player_id);
 
-	if (sessions_.size() < get_min_room_size())
+		error = sessions_.size() < get_min_room_size();
+	}
+
+	if (error)
 	{
 		OnError(ErrorCode::MinRoomSizeLost, "Player left");
 	}
