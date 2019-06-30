@@ -24,28 +24,28 @@ public:
 
 	virtual std::shared_ptr<SocketIOSession> CreateNewSession(boost::asio::ip::tcp::socket&& socket) override;
 
-	std::shared_ptr<MultiplayerRoom> NewLobby();
+	multiplayer_room_t NewLobby();
 
-	void AddRoom(std::shared_ptr<MultiplayerRoom> room);
+	void AddRoom(multiplayer_room_t room);
 
 	void RemoveRoom(const multiplayer_room_id_t& room_id);
 
 	void TransportPlayersToActiveLobby(const multiplayer_room_id_t& room_id);
 
-	std::shared_ptr<MultiplayerRoom> get_current_lobby()
+	multiplayer_room_t get_current_lobby()
 	{
 		return current_lobby_;
 	}
 
-	void set_current_lobby(std::shared_ptr<MultiplayerRoom> room)
+	void set_current_lobby(multiplayer_room_t room)
 	{
 		current_lobby_ = room;
 	}
 
-	void AddPlayerToCurrentLobbyRoom(std::shared_ptr<MultiplayerSession> player);
+	void AddSessionToCurrentLobbyRoom(multiplayer_session_t player);
 private:
 	room_map_t rooms_;
-	std::shared_ptr<MultiplayerRoom> current_lobby_;
+	multiplayer_room_t current_lobby_;
 	std::shared_ptr<boost::beast::net::io_context> io_context_;
 };
 

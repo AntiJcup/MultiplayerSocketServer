@@ -10,8 +10,7 @@
 
 #include "SocketIOMessageParser.h"
 #include "SocketIOCommonTypes.h"
-
-class SocketIOSessionManager;
+#include "SocketIOSessionManager.h"
 
 enum class SessionState
 {
@@ -23,10 +22,10 @@ enum class SessionState
 class SocketIOSession : public std::enable_shared_from_this<SocketIOSession>
 {
 public:
-	typedef boost::signals2::signal<void(std::shared_ptr<SocketIOSession>)> disconnect_signal_t;
-	typedef boost::signals2::signal<void(std::shared_ptr<SocketIOSession>, std::shared_ptr<google::protobuf::MessageLite>)> message_signal_t;
+	typedef boost::signals2::signal<void(socket_io_session_t)> disconnect_signal_t;
+	typedef boost::signals2::signal<void(socket_io_session_t, message_t)> message_signal_t;
 
-	SocketIOSession(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<SocketIOSessionManager> session_manager);
+	SocketIOSession(boost::asio::ip::tcp::socket&& socket, socket_io_session_manager_t session_manager);
 
 	virtual ~SocketIOSession() = default;
 	SocketIOSession(SocketIOSession&&) = default;
@@ -46,7 +45,7 @@ public:
 	boost::signals2::connection ListenToDisconnect(const disconnect_signal_t::slot_type& subscriber);
 	boost::signals2::connection ListenToMessages(const message_signal_t::slot_type& subscriber);
 
-	void Send(const google::protobuf::MessageLite& message);
+	void Send(message_t message);
 
 protected:
 	void OnAccept(boost::beast::error_code ec);
@@ -61,7 +60,7 @@ protected:
 
 	void OnDisconnect();
 
-	void OnMessage(std::shared_ptr<google::protobuf::MessageLite> message);
+	void OnMessage(message_t message);
 
 	void Write(const boost::asio::streambuf& stream_buffer);
 
@@ -81,4 +80,3 @@ private:
 
 	SessionState state_{ SessionState::Default };
 };
-

@@ -5,7 +5,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
-SocketIOSession::SocketIOSession(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<SocketIOSessionManager> session_manager)
+SocketIOSession::SocketIOSession(boost::asio::ip::tcp::socket&& socket, socket_io_session_manager_t session_manager)
 	: web_socket_stream_(std::move(socket)), session_manager_(session_manager)
 {
 }
@@ -43,7 +43,7 @@ boost::signals2::connection SocketIOSession::ListenToMessages(const message_sign
 	return message_sig_.connect(subscriber);
 }
 
-void SocketIOSession::Send(const google::protobuf::MessageLite& message)
+void SocketIOSession::Send(message_t message)
 {
 	boost::asio::streambuf stream_buffer;
 	std::ostream output_stream(&stream_buffer);
@@ -52,7 +52,7 @@ void SocketIOSession::Send(const google::protobuf::MessageLite& message)
 		google::protobuf::io::CodedOutputStream coded_output_stream(&raw_output_stream);
 		/*coded_output_stream.WriteVarint32(message.ByteSize());*/
 
-		message.SerializeToCodedStream(&coded_output_stream);
+		message->SerializeToCodedStream(&coded_output_stream);
 		// IMPORTANT: In order to flush a CodedOutputStream it has to be deleted,
 		// otherwise a 0 bytes package is send over the wire.
 	}
@@ -131,7 +131,7 @@ void SocketIOSession::OnDisconnect()
 	disconnect_sig_(shared_from_this()); //Fire disconnect event
 }
 
-void SocketIOSession::OnMessage(std::shared_ptr<google::protobuf::MessageLite> message)
+void SocketIOSession::OnMessage(message_t message)
 {
 	message_sig_(shared_from_this(), message);
 }

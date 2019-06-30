@@ -54,3 +54,4 @@ public:
 };
 
 typedef boost::msm::back::state_machine<MultiplayerSession_> MultiplayerSession;
+typedef std::shared_ptr<MultiplayerSession> multiplayer_session_t;

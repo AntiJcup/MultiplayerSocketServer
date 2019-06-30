@@ -67,13 +67,15 @@ public:
 		std::shared_ptr<SocketIOSession> session;
 		std::shared_ptr<google::protobuf::MessageLite> message;
 	};
-	struct RemovePlayer
-	{
 
+	struct SessionDisconnect
+	{
+		socket_io_session_id_t session_id;
 	};
-	struct AddPlayer
-	{
 
+	struct SessionConnect
+	{
+		multiplayer_session_t session;
 	};
 #pragma endregion Events
 
@@ -113,21 +115,21 @@ public:
 			}
 		};
 
-		struct internal_on_player_joined_fct
+		struct internal_on_session_connect_fct
 		{
 			template <class EVT, class FSM, class SourceState, class TargetState>
 			void operator()(EVT const&, FSM&, SourceState&, TargetState&)
 			{
-				std::cout << "Empty::internal_transition_table internal_on_player_joined_fct action" << std::endl;
+				std::cout << "Empty::internal_transition_table internal_on_session_connect_fct action" << std::endl;
 			}
 		};
 
-		struct internal_on_player_left_fct
+		struct internal_on_session_disconnect_fct
 		{
 			template <class EVT, class FSM, class SourceState, class TargetState>
 			void operator()(EVT const&, FSM&, SourceState&, TargetState&)
 			{
-				std::cout << "Empty::internal_transition_table internal_on_player_joined_fct action" << std::endl;
+				std::cout << "Empty::internal_transition_table internal_on_session_disconnect_fct action" << std::endl;
 			}
 		};
 
@@ -135,8 +137,8 @@ public:
 			//								Start       Event        Next            Action                 Guard
 			//							+---------+--------------+---------+------------------------+----------------------+
 			boost::msm::front::Internal <	 MessageReceived, internal_on_message_fct, internal_guard_fct			>,
-			boost::msm::front::Internal <	 RemovePlayer, internal_on_player_left_fct, internal_guard_fct			>,
-			boost::msm::front::Internal <	 AddPlayer, internal_on_player_joined_fct, internal_guard_fct			>
+			boost::msm::front::Internal <	 SessionDisconnect, internal_on_session_disconnect_fct, internal_guard_fct			>,
+			boost::msm::front::Internal <	 SessionConnect, internal_on_session_connect_fct, internal_guard_fct			>
 		> {};
 
 		typedef WaitingForPlayers initial_state;
@@ -209,7 +211,7 @@ public:
 		return max_start_time_;
 	}
 
-	const multiplayer_room_id_t &get_id() const noexcept
+	const multiplayer_room_id_t& get_id() const noexcept
 	{
 		return id_;
 	}
@@ -221,8 +223,8 @@ public:
 	void AddSession(std::shared_ptr<MultiplayerSession> player);
 	void RemoveSession(const socket_io_session_id_t& player_id);
 
-	void Broadcast(std::shared_ptr<google::protobuf::MessageLite> message);
-	void Send(const socket_io_session_id_t& player_id, std::shared_ptr<google::protobuf::MessageLite> message);
+	void Broadcast(message_t message);
+	void Send(const socket_io_session_id_t& player_id, message_t message);
 
 	boost::signals2::connection ListenToComplete(const complete_signal_t::slot_type& subscriber);
 	boost::signals2::connection ListenToError(const error_signal_t::slot_type& subscriber);
@@ -232,8 +234,7 @@ public:
 	void ProcessEvent(const Event& ev)
 	{
 		boost::lock_guard<MultiplayerRoom_> guard(*this);
-		//auto back_end = std::dynamic_pointer_cast<MultiplayerRoom>(shared_from_this());
-		boost::msm::back::state_machine<MultiplayerRoom_>& fsm = static_cast<boost::msm::back::state_machine<MultiplayerRoom_> &>(*this);
+		boost::msm::back::state_machine<MultiplayerRoom_>& fsm = static_cast<boost::msm::back::state_machine<MultiplayerRoom_>&>(*this);
 		fsm.process_event(ev);
 	}
 private:
@@ -264,3 +265,4 @@ private:
 };
 
 typedef boost::msm::back::state_machine<MultiplayerRoom_> MultiplayerRoom;
+typedef std::shared_ptr<MultiplayerRoom> multiplayer_room_t;

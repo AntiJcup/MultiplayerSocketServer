@@ -33,21 +33,22 @@ std::shared_ptr<SocketIOSession> MultiplayerSessionManager::CreateNewSession(boo
 	//	sessions_[session->get_id()] = std::move(session_wrapper);
 	//}
 
-	AddPlayerToCurrentLobbyRoom(session);
+	AddSessionToCurrentLobbyRoom(session);
 	return session;
 }
 
-std::shared_ptr<MultiplayerRoom> MultiplayerSessionManager::NewLobby()
+multiplayer_room_t MultiplayerSessionManager::NewLobby()
 {
 	auto new_room = std::make_shared<MultiplayerRoom>(max_room_size, min_room_size, max_room_wait, io_context_);
 	AddRoom(new_room);
 	new_room->Initialize();
+	new_room->start();
 	set_current_lobby(new_room);
 
 	return new_room;
 }
 
-void MultiplayerSessionManager::AddRoom(std::shared_ptr<MultiplayerRoom> room)
+void MultiplayerSessionManager::AddRoom(multiplayer_room_t room)
 {
 	boost::lock_guard<MultiplayerSessionManager> guard(*this);
 
@@ -76,13 +77,13 @@ void MultiplayerSessionManager::AddRoom(std::shared_ptr<MultiplayerRoom> room)
 	rooms_[room->get_id()] = std::move(session);
 }
 
-void MultiplayerSessionManager::RemoveRoom(const multiplayer_room_id_t &room_id)
+void MultiplayerSessionManager::RemoveRoom(const multiplayer_room_id_t& room_id)
 {
 	boost::lock_guard<MultiplayerSessionManager> guard(*this);
 	rooms_.erase(room_id);
 }
 
-void MultiplayerSessionManager::TransportPlayersToActiveLobby(const multiplayer_room_id_t&room_id)
+void MultiplayerSessionManager::TransportPlayersToActiveLobby(const multiplayer_room_id_t& room_id)
 {
 	std::vector<socket_io_session_id_t> player_ids;
 	std::shared_ptr<MultiplayerRoom> room;
@@ -95,11 +96,11 @@ void MultiplayerSessionManager::TransportPlayersToActiveLobby(const multiplayer_
 	for (auto& player_id : player_ids)
 	{
 		room->RemoveSession(player_id);
-		AddPlayerToCurrentLobbyRoom(std::dynamic_pointer_cast<MultiplayerSession>(sessions_[player_id].session));
+		AddSessionToCurrentLobbyRoom(std::dynamic_pointer_cast<MultiplayerSession>(sessions_[player_id].session));
 	}
 }
 
-void MultiplayerSessionManager::AddPlayerToCurrentLobbyRoom(std::shared_ptr<MultiplayerSession> player)
+void MultiplayerSessionManager::AddSessionToCurrentLobbyRoom(multiplayer_session_t player)
 {
 	std::shared_ptr<MultiplayerRoom> lobby_room;
 	bool room_full = false;

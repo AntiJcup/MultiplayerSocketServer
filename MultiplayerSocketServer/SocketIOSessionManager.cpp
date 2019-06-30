@@ -29,18 +29,18 @@ void SocketIOSessionManager::RemoveSession(const socket_io_session_id_t &session
 	sessions_.erase(session_id);
 }
 
-void SocketIOSessionManager::Broadcast(std::shared_ptr<google::protobuf::MessageLite> message)
+void SocketIOSessionManager::Broadcast(message_t message)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
 
 	for (auto& session : sessions_)
 	{
-		session.second.session->Send(*message);
+		session.second.session->Send(message);
 	}
 }
 
-void SocketIOSessionManager::Send(const socket_io_session_id_t& session_id, std::shared_ptr<google::protobuf::MessageLite> message)
+void SocketIOSessionManager::Send(const socket_io_session_id_t& session_id, message_t message)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
-	sessions_[session_id].session->Send(*message);
+	sessions_[session_id].session->Send(message);
 }

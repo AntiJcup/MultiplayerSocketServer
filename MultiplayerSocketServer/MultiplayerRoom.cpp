@@ -45,9 +45,13 @@ std::vector<socket_io_session_id_t> MultiplayerRoom_::get_player_ids()
 #pragma region Sessions
 void MultiplayerRoom_::AddSession(std::shared_ptr<MultiplayerSession> player)
 {
-	ProcessEvent(AddPlayer());
+	ProcessEvent(SessionConnect());
 }
 
+void MultiplayerRoom_::RemoveSession(const socket_io_session_id_t& player_id)
+{
+	ProcessEvent(SessionDisconnect());
+}
 
 void MultiplayerRoom_::AddSessionInternal(std::shared_ptr<MultiplayerSession> player)
 {
@@ -84,11 +88,6 @@ void MultiplayerRoom_::AddSessionInternal(std::shared_ptr<MultiplayerSession> pl
 	}
 }
 
-void MultiplayerRoom_::RemoveSession(const socket_io_session_id_t& player_id)
-{
-	ProcessEvent(RemovePlayer());
-}
-
 void MultiplayerRoom_::RemoveSessionInternal(const socket_io_session_id_t& player_id)
 {
 	auto error = false;
@@ -109,20 +108,20 @@ void MultiplayerRoom_::RemoveSessionInternal(const socket_io_session_id_t& playe
 #pragma endregion Sessions
 
 #pragma region Messaging
-void MultiplayerRoom_::Broadcast(std::shared_ptr<google::protobuf::MessageLite> message)
+void MultiplayerRoom_::Broadcast(message_t message)
 {
 	boost::lock_guard<MultiplayerRoom_> guard(*this);
 
 	for (auto& session : sessions_)
 	{
-		session.second.player->Send(*message);
+		session.second.player->Send(message);
 	}
 }
 
-void MultiplayerRoom_::Send(const socket_io_session_id_t& player_id, std::shared_ptr<google::protobuf::MessageLite> message)
+void MultiplayerRoom_::Send(const socket_io_session_id_t& player_id, message_t message)
 {
 	boost::lock_guard<MultiplayerRoom_> guard(*this);
-	sessions_[player_id].player->Send(*message);
+	sessions_[player_id].player->Send(message);
 }
 
 void MultiplayerRoom_::OnMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
