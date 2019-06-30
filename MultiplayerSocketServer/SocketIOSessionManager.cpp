@@ -23,7 +23,7 @@ std::shared_ptr<SocketIOSession> SocketIOSessionManager::CreateNewSession(boost:
 	return session;
 }
 
-void SocketIOSessionManager::RemoveSession(boost::uuids::uuid session_id)
+void SocketIOSessionManager::RemoveSession(const socket_io_session_id_t &session_id)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
 	sessions_.erase(session_id);
@@ -39,7 +39,7 @@ void SocketIOSessionManager::Broadcast(std::shared_ptr<google::protobuf::Message
 	}
 }
 
-void SocketIOSessionManager::Send(const boost::uuids::uuid& session_id, std::shared_ptr<google::protobuf::MessageLite> message)
+void SocketIOSessionManager::Send(const socket_io_session_id_t& session_id, std::shared_ptr<google::protobuf::MessageLite> message)
 {
 	boost::lock_guard<SocketIOSessionManager> guard(*this);
 	sessions_[session_id].session->Send(*message);

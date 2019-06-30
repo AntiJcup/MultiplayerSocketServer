@@ -99,6 +99,9 @@
     <ClCompile Include="Point.cpp">
       <Filter>Source Files\Entities</Filter>
     </ClCompile>
+    <ClCompile Include="SocketIOCommonTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -154,6 +157,12 @@
     </ClInclude>
     <ClInclude Include="Point.h">
       <Filter>Header Files\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketIOCommonTypes.h">
+      <Filter>Header Files\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiplayerCommonTypes.h">
+      <Filter>Header Files\Multiplayer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

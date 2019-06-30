@@ -2,6 +2,8 @@
 
 #include "SocketIOSessionManager.h"
 #include "MultiplayerRoom.h"
+#include "MultiplayerCommonTypes.h"
+
 #include <boost/beast/core.hpp>
 
 class MultiplayerRoomManagerSession
@@ -15,6 +17,7 @@ public:
 
 class MultiplayerSessionManager : public SocketIOSessionManager
 {
+	typedef std::unordered_map<multiplayer_room_id_t, MultiplayerRoomManagerSession, multiplayer_room_id_hasher_t> room_map_t;
 public:
 	MultiplayerSessionManager(std::shared_ptr<boost::beast::net::io_context> io_context);
 	void Initialize();
@@ -25,9 +28,9 @@ public:
 
 	void AddRoom(std::shared_ptr<MultiplayerRoom> room);
 
-	void RemoveRoom(boost::uuids::uuid room_id);
+	void RemoveRoom(const multiplayer_room_id_t& room_id);
 
-	void TransportPlayersToActiveLobby(boost::uuids::uuid room_id);
+	void TransportPlayersToActiveLobby(const multiplayer_room_id_t& room_id);
 
 	std::shared_ptr<MultiplayerRoom> get_current_lobby()
 	{
@@ -41,7 +44,7 @@ public:
 
 	void AddPlayerToCurrentLobbyRoom(std::shared_ptr<MultiplayerSession> player);
 private:
-	std::unordered_map<boost::uuids::uuid, MultiplayerRoomManagerSession, boost::hash<boost::uuids::uuid>> rooms_;
+	room_map_t rooms_;
 	std::shared_ptr<MultiplayerRoom> current_lobby_;
 	std::shared_ptr<boost::beast::net::io_context> io_context_;
 };

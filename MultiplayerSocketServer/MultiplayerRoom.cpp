@@ -2,7 +2,6 @@
 #include "MultiplayerSession.h"
 #include "MultiplayerException.h"
 
-#include <boost/thread/lock_guard.hpp>
 
 MultiplayerRoom_::MultiplayerRoom_(const std::size_t& max_room_size,
 	const std::size_t& min_room_size,
@@ -30,9 +29,9 @@ std::size_t MultiplayerRoom_::get_player_count()
 	return sessions_.size();
 }
 
-std::vector<boost::uuids::uuid> MultiplayerRoom_::get_player_ids()
+std::vector<socket_io_session_id_t> MultiplayerRoom_::get_player_ids()
 {
-	std::vector<boost::uuids::uuid> player_ids(sessions_.size());
+	std::vector<socket_io_session_id_t> player_ids(sessions_.size());
 	boost::lock_guard<MultiplayerRoom_> guard(*this);
 	for (auto& player : sessions_)
 	{
@@ -45,6 +44,12 @@ std::vector<boost::uuids::uuid> MultiplayerRoom_::get_player_ids()
 
 #pragma region Sessions
 void MultiplayerRoom_::AddSession(std::shared_ptr<MultiplayerSession> player)
+{
+	ProcessEvent(AddPlayer());
+}
+
+
+void MultiplayerRoom_::AddSessionInternal(std::shared_ptr<MultiplayerSession> player)
 {
 	boost::lock_guard<MultiplayerRoom_> guard(*this);
 	if (sessions_.size() >= get_max_room_size())
@@ -79,7 +84,12 @@ void MultiplayerRoom_::AddSession(std::shared_ptr<MultiplayerSession> player)
 	}
 }
 
-std::shared_ptr<MultiplayerSession> MultiplayerRoom_::RemoveSession(const boost::uuids::uuid& player_id)
+void MultiplayerRoom_::RemoveSession(const socket_io_session_id_t& player_id)
+{
+	ProcessEvent(RemovePlayer());
+}
+
+void MultiplayerRoom_::RemoveSessionInternal(const socket_io_session_id_t& player_id)
 {
 	auto error = false;
 	std::shared_ptr<MultiplayerSession> player;
@@ -95,8 +105,6 @@ std::shared_ptr<MultiplayerSession> MultiplayerRoom_::RemoveSession(const boost:
 	{
 		OnError(ErrorCode::MinRoomSizeLost, "Player left");
 	}
-
-	return player;
 }
 #pragma endregion Sessions
 
@@ -111,7 +119,7 @@ void MultiplayerRoom_::Broadcast(std::shared_ptr<google::protobuf::MessageLite> 
 	}
 }
 
-void MultiplayerRoom_::Send(const boost::uuids::uuid& player_id, std::shared_ptr<google::protobuf::MessageLite> message)
+void MultiplayerRoom_::Send(const socket_io_session_id_t& player_id, std::shared_ptr<google::protobuf::MessageLite> message)
 {
 	boost::lock_guard<MultiplayerRoom_> guard(*this);
 	sessions_[player_id].player->Send(*message);
@@ -152,6 +160,6 @@ void MultiplayerRoom_::OnError(ErrorCode error, const char* msg)
 void MultiplayerRoom_::OnStartTimer()
 {
 	start_sig_(shared_from_this());
-	//set_room_state(RoomState::Game);
+	ProcessEvent(StartGame());
 }
 #pragma endregion Listen

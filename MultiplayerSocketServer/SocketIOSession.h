@@ -2,7 +2,6 @@
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/signals2/signal.hpp>
 #include <boost/asio/streambuf.hpp>
@@ -10,6 +9,7 @@
 #include <google/protobuf/message.h>
 
 #include "SocketIOMessageParser.h"
+#include "SocketIOCommonTypes.h"
 
 class SocketIOSessionManager;
 
@@ -33,7 +33,7 @@ public:
 
 	void Run();
 
-	boost::uuids::uuid get_id()
+	const socket_io_session_id_t& get_id() const
 	{
 		return id_;
 	}
@@ -70,7 +70,7 @@ protected:
 private:
 	boost::beast::websocket::stream<boost::beast::tcp_stream> web_socket_stream_;
 	boost::beast::flat_buffer buffer_;
-	boost::uuids::uuid id_{ boost::uuids::random_generator()() };
+	socket_io_session_id_t id_{ boost::uuids::random_generator()() };
 
 	std::shared_ptr<SocketIOSessionManager> session_manager_;
 

@@ -76,15 +76,15 @@ void MultiplayerSessionManager::AddRoom(std::shared_ptr<MultiplayerRoom> room)
 	rooms_[room->get_id()] = std::move(session);
 }
 
-void MultiplayerSessionManager::RemoveRoom(boost::uuids::uuid room_id)
+void MultiplayerSessionManager::RemoveRoom(const multiplayer_room_id_t &room_id)
 {
 	boost::lock_guard<MultiplayerSessionManager> guard(*this);
 	rooms_.erase(room_id);
 }
 
-void MultiplayerSessionManager::TransportPlayersToActiveLobby(boost::uuids::uuid room_id)
+void MultiplayerSessionManager::TransportPlayersToActiveLobby(const multiplayer_room_id_t&room_id)
 {
-	std::vector<boost::uuids::uuid> player_ids;
+	std::vector<socket_io_session_id_t> player_ids;
 	std::shared_ptr<MultiplayerRoom> room;
 	{
 		boost::lock_guard<MultiplayerSessionManager> guard(*this);
@@ -94,7 +94,7 @@ void MultiplayerSessionManager::TransportPlayersToActiveLobby(boost::uuids::uuid
 
 	for (auto& player_id : player_ids)
 	{
-		auto removed_player = room->RemoveSession(player_id);
+		room->RemoveSession(player_id);
 		AddPlayerToCurrentLobbyRoom(std::dynamic_pointer_cast<MultiplayerSession>(sessions_[player_id].session));
 	}
 }
