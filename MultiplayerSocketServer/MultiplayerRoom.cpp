@@ -3,7 +3,7 @@
 #include "MultiplayerException.h"
 
 
-MultiplayerRoom_::MultiplayerRoom_(const std::size_t& max_room_size,
+MultiplayerRoom::MultiplayerRoom(const std::size_t& max_room_size,
 	const std::size_t& min_room_size,
 	const std::size_t& max_start_time,
 	std::shared_ptr<boost::beast::net::io_context> io_context)
@@ -16,23 +16,23 @@ MultiplayerRoom_::MultiplayerRoom_(const std::size_t& max_room_size,
 
 }
 
-void MultiplayerRoom_::Initialize()
+void MultiplayerRoom::Initialize()
 {
-	boost::lock_guard<MultiplayerRoom_> guard(*this);
+	boost::lock_guard<MultiplayerRoom> guard(*this);
 	//message_handlers_[RoomState::Lobby] = std::shared_ptr<MultiplayerRoomMessageHandler>(new LobbyMessageHandler(shared_from_this()));
 }
 
 #pragma region Getters
-std::size_t MultiplayerRoom_::get_player_count()
+std::size_t MultiplayerRoom::get_player_count()
 {
-	boost::lock_guard<MultiplayerRoom_> guard(*this);
+	boost::lock_guard<MultiplayerRoom> guard(*this);
 	return sessions_.size();
 }
 
-std::vector<socket_io_session_id_t> MultiplayerRoom_::get_player_ids()
+std::vector<socket_io_session_id_t> MultiplayerRoom::get_player_ids()
 {
 	std::vector<socket_io_session_id_t> player_ids(sessions_.size());
-	boost::lock_guard<MultiplayerRoom_> guard(*this);
+	boost::lock_guard<MultiplayerRoom> guard(*this);
 	for (auto& player : sessions_)
 	{
 		player_ids.push_back(player.second.player->get_id());
@@ -43,19 +43,9 @@ std::vector<socket_io_session_id_t> MultiplayerRoom_::get_player_ids()
 #pragma endregion Getters
 
 #pragma region Sessions
-void MultiplayerRoom_::AddSession(std::shared_ptr<MultiplayerSession> player)
+void MultiplayerRoom::AddSession(multiplayer_session_t player)
 {
-	ProcessEvent(SessionConnect());
-}
-
-void MultiplayerRoom_::RemoveSession(const socket_io_session_id_t& player_id)
-{
-	ProcessEvent(SessionDisconnect());
-}
-
-void MultiplayerRoom_::AddSessionInternal(std::shared_ptr<MultiplayerSession> player)
-{
-	boost::lock_guard<MultiplayerRoom_> guard(*this);
+	boost::lock_guard<MultiplayerRoom> guard(*this);
 	if (sessions_.size() >= get_max_room_size())
 	{
 		throw MultiplayerRoomException("too many players in this room", MultiplayerRoomExceptionType::RoomFull);
@@ -65,11 +55,11 @@ void MultiplayerRoom_::AddSessionInternal(std::shared_ptr<MultiplayerSession> pl
 	session.player = player;
 	session.disconnect_connection = player->ListenToDisconnect(
 		[this](auto session) {
-			io_context_->post(boost::bind(&MultiplayerRoom_::RemoveSession, this, session->get_id()));
+			io_context_->post(boost::bind(&MultiplayerRoom::RemoveSession, this, session->get_id()));
 		});
 	session.message_connection = player->ListenToMessages(
 		[this](auto session, auto message) {
-			io_context_->post(boost::bind(&MultiplayerRoom_::OnMessage, this, session, message));
+			io_context_->post(boost::bind(&MultiplayerRoom::OnMessage, this, session, message));
 		});
 	sessions_[player->get_id()] = std::move(session);
 
@@ -78,22 +68,22 @@ void MultiplayerRoom_::AddSessionInternal(std::shared_ptr<MultiplayerSession> pl
 		start_timer_.expires_from_now(boost::posix_time::seconds(get_max_start_time()));
 		start_timer_.async_wait([this](auto error_code)
 			{
-				io_context_->post(boost::bind(&MultiplayerRoom_::OnStartTimer, this));
+				io_context_->post(boost::bind(&MultiplayerRoom::OnStartTimer, this));
 			});
 	}
 	else if (sessions_.size() >= get_max_room_size())
 	{
 		start_timer_.cancel();
-		io_context_->post(boost::bind(&MultiplayerRoom_::OnStartTimer, this));
+		io_context_->post(boost::bind(&MultiplayerRoom::OnStartTimer, this));
 	}
 }
 
-void MultiplayerRoom_::RemoveSessionInternal(const socket_io_session_id_t& player_id)
+void MultiplayerRoom::RemoveSession(const socket_io_session_id_t& player_id)
 {
 	auto error = false;
 	std::shared_ptr<MultiplayerSession> player;
 	{
-		boost::lock_guard<MultiplayerRoom_> guard(*this);
+		boost::lock_guard<MultiplayerRoom> guard(*this);
 		player = sessions_[player_id].player;
 		sessions_.erase(player_id);
 
@@ -108,9 +98,9 @@ void MultiplayerRoom_::RemoveSessionInternal(const socket_io_session_id_t& playe
 #pragma endregion Sessions
 
 #pragma region Messaging
-void MultiplayerRoom_::Broadcast(message_t message)
+void MultiplayerRoom::Broadcast(message_t message)
 {
-	boost::lock_guard<MultiplayerRoom_> guard(*this);
+	boost::lock_guard<MultiplayerRoom> guard(*this);
 
 	for (auto& session : sessions_)
 	{
@@ -118,47 +108,46 @@ void MultiplayerRoom_::Broadcast(message_t message)
 	}
 }
 
-void MultiplayerRoom_::Send(const socket_io_session_id_t& player_id, message_t message)
+void MultiplayerRoom::Send(const socket_io_session_id_t& player_id, message_t message)
 {
-	boost::lock_guard<MultiplayerRoom_> guard(*this);
+	boost::lock_guard<MultiplayerRoom> guard(*this);
 	sessions_[player_id].player->Send(message);
 }
 
-void MultiplayerRoom_::OnMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
+void MultiplayerRoom::OnMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
 {
 	//message_handlers_[RoomState::Lobby]->HandleMessage(session, message);
 }
 #pragma endregion Messaging
 
 #pragma region Listen
-boost::signals2::connection MultiplayerRoom_::ListenToComplete(const complete_signal_t::slot_type& subscriber)
+boost::signals2::connection MultiplayerRoom::ListenToComplete(const complete_signal_t::slot_type& subscriber)
 {
 	return complete_sig_.connect(subscriber);
 }
 
-boost::signals2::connection MultiplayerRoom_::ListenToError(const error_signal_t::slot_type& subscriber)
+boost::signals2::connection MultiplayerRoom::ListenToError(const error_signal_t::slot_type& subscriber)
 {
 	return error_sig_.connect(subscriber);
 }
 
-boost::signals2::connection MultiplayerRoom_::ListenToStart(const start_signal_t::slot_type& subscriber)
+boost::signals2::connection MultiplayerRoom::ListenToStart(const start_signal_t::slot_type& subscriber)
 {
 	return start_sig_.connect(subscriber);
 }
 
-void MultiplayerRoom_::OnComplete()
+void MultiplayerRoom::OnComplete()
 {
 	complete_sig_(shared_from_this());
 }
 
-void MultiplayerRoom_::OnError(ErrorCode error, const char* msg)
+void MultiplayerRoom::OnError(ErrorCode error, const char* msg)
 {
 	error_sig_(shared_from_this(), error, msg);
 }
 
-void MultiplayerRoom_::OnStartTimer()
+void MultiplayerRoom::OnStartTimer()
 {
 	start_sig_(shared_from_this());
-	ProcessEvent(StartGame());
 }
 #pragma endregion Listen

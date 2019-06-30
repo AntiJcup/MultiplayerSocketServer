@@ -100,7 +100,7 @@
       <Filter>Source Files\Entities</Filter>
     </ClCompile>
     <ClCompile Include="SocketIOCommonTypes.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Socket</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

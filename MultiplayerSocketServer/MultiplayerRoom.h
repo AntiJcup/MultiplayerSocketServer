@@ -34,162 +34,20 @@ class MultiplayerRoomSession
 public:
 	boost::signals2::scoped_connection disconnect_connection;
 	boost::signals2::scoped_connection message_connection;
-	std::shared_ptr<MultiplayerSession> player;
+	multiplayer_session_t player;
 };
 
-class MultiplayerRoom_ :
-	public boost::msm::front::state_machine_def<MultiplayerRoom_>,
+class MultiplayerRoom :
 	public boost::basic_lockable_adapter<boost::recursive_mutex>,
-	public std::enable_shared_from_this<MultiplayerRoom_>
+	public std::enable_shared_from_this<MultiplayerRoom>
 {
 	typedef std::unordered_map<socket_io_session_id_t, MultiplayerRoomSession, socket_io_session_id_hasher_t> session_map_t;
 public:
-	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom_>)> complete_signal_t;
-	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom_>, ErrorCode, const char*)> error_signal_t;
-	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom_>)> start_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>)> complete_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>, ErrorCode, const char*)> error_signal_t;
+	typedef boost::signals2::signal<void(std::shared_ptr<MultiplayerRoom>)> start_signal_t;
 
-#pragma region Events
-	//Top
-	struct StartGame {};
-	struct ReadyGame {};
-	struct FinishGame {};
-	struct Error {};
-
-	//Internal
-	struct MessageReceived
-	{
-		MessageReceived(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
-			: session(session), message(message)
-		{
-
-		}
-
-		std::shared_ptr<SocketIOSession> session;
-		std::shared_ptr<google::protobuf::MessageLite> message;
-	};
-
-	struct SessionDisconnect
-	{
-		socket_io_session_id_t session_id;
-	};
-
-	struct SessionConnect
-	{
-		multiplayer_session_t session;
-	};
-#pragma endregion Events
-
-#pragma region States
-	struct Lobby_ : public boost::msm::front::state_machine_def<Lobby_>
-	{
-		struct WaitingForPlayers : public boost::msm::front::state<>
-		{
-
-		};
-
-		struct Full : public boost::msm::front::state<>
-		{
-
-		};
-		// optional entry/exit methods
-		//template <class Event,class FSM>
-		//void on_entry(Event const&,FSM& ) {std::cout << "entering: Waiting" << std::endl;}
-		//template <class Event,class FSM>
-		//void on_exit(Event const&,FSM& ) {std::cout << "leaving: Waiting" << std::endl;}
-
-		struct internal_guard_fct
-		{
-			template <class EVT, class FSM, class SourceState, class TargetState>
-			bool operator()(EVT const& evt, FSM&, SourceState&, TargetState&)
-			{
-				return false;
-			}
-		};
-
-		struct internal_on_message_fct
-		{
-			template <class EVT, class FSM, class SourceState, class TargetState>
-			void operator()(EVT const&, FSM&, SourceState&, TargetState&)
-			{
-				std::cout << "Empty::internal_transition_table internal_on_message_fct action" << std::endl;
-			}
-		};
-
-		struct internal_on_session_connect_fct
-		{
-			template <class EVT, class FSM, class SourceState, class TargetState>
-			void operator()(EVT const&, FSM&, SourceState&, TargetState&)
-			{
-				std::cout << "Empty::internal_transition_table internal_on_session_connect_fct action" << std::endl;
-			}
-		};
-
-		struct internal_on_session_disconnect_fct
-		{
-			template <class EVT, class FSM, class SourceState, class TargetState>
-			void operator()(EVT const&, FSM&, SourceState&, TargetState&)
-			{
-				std::cout << "Empty::internal_transition_table internal_on_session_disconnect_fct action" << std::endl;
-			}
-		};
-
-		struct internal_transition_table : boost::mpl::vector<
-			//								Start       Event        Next            Action                 Guard
-			//							+---------+--------------+---------+------------------------+----------------------+
-			boost::msm::front::Internal <	 MessageReceived, internal_on_message_fct, internal_guard_fct			>,
-			boost::msm::front::Internal <	 SessionDisconnect, internal_on_session_disconnect_fct, internal_guard_fct			>,
-			boost::msm::front::Internal <	 SessionConnect, internal_on_session_connect_fct, internal_guard_fct			>
-		> {};
-
-		typedef WaitingForPlayers initial_state;
-	};
-	typedef boost::msm::back::state_machine<Lobby_> Lobby;
-
-	struct Game_ : public boost::msm::front::state_machine_def<Game_>
-	{
-		struct Loading : public boost::msm::front::state<>
-		{
-
-		};
-
-		struct Playing : public boost::msm::front::state<>
-		{
-
-		};
-		// optional entry/exit methods
-		//template <class Event,class FSM>
-		//void on_entry(Event const&,FSM& ) {std::cout << "entering: Waiting" << std::endl;}
-		//template <class Event,class FSM>
-		//void on_exit(Event const&,FSM& ) {std::cout << "leaving: Waiting" << std::endl;}
-
-		typedef Loading initial_state;
-	};
-	typedef boost::msm::back::state_machine<Game_> Game;
-
-	struct Closed : public boost::msm::front::state<>
-	{
-		// optional entry/exit methods
-		//template <class Event,class FSM>
-		//void on_entry(Event const&,FSM& ) {std::cout << "entering: Waiting" << std::endl;}
-		//template <class Event,class FSM>
-		//void on_exit(Event const&,FSM& ) {std::cout << "leaving: Waiting" << std::endl;}
-	};
-
-	typedef Lobby initial_state;
-#pragma endregion States
-
-#pragma region TransitionTable
-	// Transition table for Playing
-	struct transition_table : boost::mpl::vector<
-		//								Start       Event        Next            Action                 Guard
-		//							+---------+--------------+---------+------------------------+----------------------+
-		boost::msm::front::Row <		Lobby, StartGame, Game, boost::msm::front::none, boost::msm::front::none			>,
-		boost::msm::front::Row <		Game, FinishGame, Closed, boost::msm::front::none, boost::msm::front::none		>,
-		boost::msm::front::Row <		Lobby, Error, Closed, boost::msm::front::none, boost::msm::front::none			>
-	> {};
-#pragma endregion TransitionTable
-
-	MultiplayerRoom_(const std::size_t& max_room_size,
+	MultiplayerRoom(const std::size_t& max_room_size,
 		const std::size_t& min_room_size,
 		const std::size_t& max_start_time,
 		std::shared_ptr<boost::beast::net::io_context> io_context);
@@ -220,7 +78,7 @@ public:
 
 	std::vector<socket_io_session_id_t> get_player_ids();
 
-	void AddSession(std::shared_ptr<MultiplayerSession> player);
+	void AddSession(multiplayer_session_t player);
 	void RemoveSession(const socket_io_session_id_t& player_id);
 
 	void Broadcast(message_t message);
@@ -230,13 +88,6 @@ public:
 	boost::signals2::connection ListenToError(const error_signal_t::slot_type& subscriber);
 	boost::signals2::connection ListenToStart(const start_signal_t::slot_type& subscriber);
 
-	template<class Event>
-	void ProcessEvent(const Event& ev)
-	{
-		boost::lock_guard<MultiplayerRoom_> guard(*this);
-		boost::msm::back::state_machine<MultiplayerRoom_>& fsm = static_cast<boost::msm::back::state_machine<MultiplayerRoom_>&>(*this);
-		fsm.process_event(ev);
-	}
 private:
 	std::size_t max_room_size_;
 	std::size_t min_room_size_;
@@ -258,11 +109,6 @@ private:
 
 	void OnMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message);
 
-	void AddSessionInternal(std::shared_ptr<MultiplayerSession> player);
-	void RemoveSessionInternal(const socket_io_session_id_t& player_id);
-
 	friend class MultiplayerRoomMessageHandler;
 };
 
-typedef boost::msm::back::state_machine<MultiplayerRoom_> MultiplayerRoom;
-typedef std::shared_ptr<MultiplayerRoom> multiplayer_room_t;

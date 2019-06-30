@@ -42,7 +42,6 @@ multiplayer_room_t MultiplayerSessionManager::NewLobby()
 	auto new_room = std::make_shared<MultiplayerRoom>(max_room_size, min_room_size, max_room_wait, io_context_);
 	AddRoom(new_room);
 	new_room->Initialize();
-	new_room->start();
 	set_current_lobby(new_room);
 
 	return new_room;

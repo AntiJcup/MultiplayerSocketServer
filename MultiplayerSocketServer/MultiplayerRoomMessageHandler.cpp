@@ -1,28 +1,19 @@
 #include "MultiplayerRoomMessageHandler.h"
 
-MultiplayerRoomMessageHandler::MultiplayerRoomMessageHandler(std::shared_ptr<MultiplayerRoom> room)
+MultiplayerRoomMessageHandler::MultiplayerRoomMessageHandler(multiplayer_room_t room)
 	: room_(room)
 {
 }
 
 #pragma region LobbyMessageHandler
-LobbyMessageHandler::LobbyMessageHandler(std::shared_ptr<MultiplayerRoom> room)
+LobbyMessageHandler::LobbyMessageHandler(multiplayer_room_t room)
 	: MultiplayerRoomMessageHandler(room)
 {
 }
 
-void LobbyMessageHandler::HandleMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
+void LobbyMessageHandler::HandleMessage(socket_io_session_t session, message_t message)
 {
-	//switch (room_->get_room_sub_state())
-	//{
-	//case RoomSubState::Waiting:
-	//case RoomSubState::Done:
-	//	break;
-	//default:
-	//	return;
-	//}
-
-	auto wrapper_message = std::dynamic_pointer_cast<google::protobuf::WrapperMessage>(message);
+	auto wrapper_message = std::dynamic_pointer_cast<wrapper_message_t>(message);
 	if (!wrapper_message)
 	{
 		return;
@@ -37,23 +28,14 @@ void LobbyMessageHandler::HandleMessage(std::shared_ptr<SocketIOSession> session
 #pragma endregion LobbyMessageHandler
 
 #pragma region GameMessageHandler
-GameMessageHandler::GameMessageHandler(std::shared_ptr<MultiplayerRoom> room)
+GameMessageHandler::GameMessageHandler(multiplayer_room_t room)
 	: MultiplayerRoomMessageHandler(room)
 {
 }
 
-void GameMessageHandler::HandleMessage(std::shared_ptr<SocketIOSession> session, std::shared_ptr<google::protobuf::MessageLite> message)
+void GameMessageHandler::HandleMessage(socket_io_session_t session, message_t message)
 {
-	/*witch (room_->get_room_sub_state())
-	{
-	case RoomSubState::Waiting:
-	case RoomSubState::Done:
-		break;
-	default:
-		return;
-	}*/
-
-	auto wrapper_message = std::dynamic_pointer_cast<google::protobuf::WrapperMessage>(message);
+	auto wrapper_message = std::dynamic_pointer_cast<wrapper_message_t>(message);
 	if (!wrapper_message)
 	{
 		return;
