@@ -46,6 +46,12 @@
     <Filter Include="Source Files\Entities">
       <UniqueIdentifier>{352c2c3d-363e-41c0-8ceb-3e380dc02e45}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GameLift">
+      <UniqueIdentifier>{a6b69646-aa54-4abf-abe5-8ba02e045b55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gamelift">
+      <UniqueIdentifier>{d9ce8590-876b-46ca-8c8a-28c343be0913}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MultiplayerSocketServer.cpp">
@@ -101,6 +107,9 @@
     </ClCompile>
     <ClCompile Include="SocketIOCommonTypes.cpp">
       <Filter>Source Files\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLiftManager.cpp">
+      <Filter>Source Files\Gamelift</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

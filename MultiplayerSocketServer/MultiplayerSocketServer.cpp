@@ -5,6 +5,7 @@
 
 #include "SocketIOManager.h"
 #include "MultiplayerSessionManager.h"
+#include "GameLiftManager.h"
 
 int main()
 {
@@ -13,7 +14,8 @@ int main()
 	auto address = boost::beast::net::ip::make_address("127.0.0.1");
 	USHORT port = 9999;
 
-	SocketIOManager manager(1);
+	SocketIOManager manager(10);
+	
 	auto session_manager = std::make_shared<MultiplayerSessionManager>(manager.GetIOContext());
 	session_manager->Initialize();
 	if (!manager.Initialize(std::make_shared<SocketIOListener>(manager.GetIOContext(),
@@ -22,6 +24,9 @@ int main()
 	{
 		return -1;
 	}
+
+	GameLiftManager gamelift;
+	gamelift.Initialize(port);
 
 	manager.Start();
 

@@ -1,5 +1,0 @@
-Package: protobuf
-Version: 3.7.1
-Architecture: x64-windows
-Multi-Arch: same
-Description: Protocol Buffers - Google's data interchange format

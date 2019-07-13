@@ -1,0 +1,11 @@
+prefix=C:/Users/Jacob/Documents/GitHub/vcpkg/packages/protobuf_x64-windows
+exec_prefix=C:/Users/Jacob/Documents/GitHub/vcpkg/packages/protobuf_x64-windows
+libdir=C:/Users/Jacob/Documents/GitHub/vcpkg/packages/protobuf_x64-windows/lib
+includedir=C:/Users/Jacob/Documents/GitHub/vcpkg/packages/protobuf_x64-windows/include
+
+Name: Protocol Buffers
+Description: Google's Data Interchange Format
+Version: 3.7.1.0
+Libs: -L${libdir} -lprotobuf 
+Cflags: -I${includedir} 
+Conflicts: protobuf-lite
